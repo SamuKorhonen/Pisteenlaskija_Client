@@ -49,15 +49,24 @@ print(ekaKierrosYLocation)
 
 kirjoitaKierrosLyhenteet()
 ikkunaCanvas.create_text(vasenMarginaali, kokoPisteMarginaali, anchor="w", text="Kokonaispisteet:", font=perusFontti, fill=fonttiVari)
+ikkunaCanvas.create_text(800, 580, anchor=CENTER, text="Ohjeet painamalla 'F1'", font=perusFontti, fill=fonttiVari)
+
 
 kokoPisteMarginaali = kokoPisteMarginaali + 38
-for i in pelaaja:
-    ikkunaCanvas.create_text(vasenMarginaali+50, kokoPisteMarginaali, anchor="w", text=i['nimi'],
-                             font=perusFontti, fill=fonttiVari)
-    kokoPisteMarginaali = kokoPisteMarginaali + 38
+if kierrosNumero == 0:
+    for i in pelaaja:
+        ikkunaCanvas.create_text(vasenMarginaali+50, kokoPisteMarginaali, anchor="w", text=i['nimi'],
+                                 font=perusFontti, fill=fonttiVari)
+        kokoPisteMarginaali = kokoPisteMarginaali + 38
+else:
+    for i in pelaaja:
+        ikkunaCanvas.create_text(vasenMarginaali+50, kokoPisteMarginaali, anchor="w", text=i['nimi'],
+                                 font=perusFontti, fill=fonttiVari)
+        kokoPisteMarginaali = kokoPisteMarginaali + 38
 
 
 kokoPisteMarginaali = 423
+
 
 
 # kierrosFrame = Frame(window, relief = 'raised', borderwidth=0)
