@@ -1,32 +1,40 @@
-PelaajaMaara = 5
-JakajanSijainti = 600
-Jakaja = 0
-PisteMaara = 0
-Valittu = 0
-KierrosNumero = 0
-ValittuKierros = 0
+import tkinter as tk
+from tkinter.font import Font
+
+pelaajaMaara = 5
+jakajanSijainti = 600
+jakaja = 0
+pisteMaara = 0
+valittu = 0
+kierrosNumero = 0
+valittuKierros = 0
 hiiri = 0
-Virhe = False
-Ohjeet = False
-TallennuksenKasittely = False
-LaatikkoX = 0
-LaatikkoY = 0
-LaatikonLeveys = 200
-Syotto = False
-SarakkeenLeveys = 200
-PerusFontti = Font(family='Arial', size=24)
-IsoFontti = Font(family='Arial', size=38)
-PieniFontti = Font(family='Arial', size=16)
-FonttiKoko = 57
-FonttiKokoIso = 95
-FonttiKokoPieni = 55
-FonttiKokoVer = 20
-IkkunaX = 1280
-IkkunaY = 720
-VasenMarkinaali = 5
-YlaMarginaali = 50
-KokoPisteMarginaali = 677
-SijaintiXOletus = 170
-SijaintiYOletus = 50
-KierrosMaara = 8
-Tallennuspaikat = 9
+virhe = False
+ohjeet = False
+tallennuksenKasittely = False
+laatikkoX = 0
+laatikkoY = 0
+laatikonLeveys = 200
+syotto = False
+sarakkeenLeveys = 200
+
+fonttiKoko = 57
+fonttiKokoIso = 95
+fonttiKokoPieni = 55
+fonttiKokoVer = 20
+ikkunaX = 1280
+ikkunaY = 720
+vasenMarginaali = 5
+ylaMarginaali = 50
+kokoPisteMarginaali = 423
+sijaintiXOletus = 170
+sijaintiYOletus = 50
+kierrosMaara = 8
+tallennuspaikat = 9
+fonttiVari = '#383eB8'
+
+kierros = ['Kirjoita pelaajien nimet', 'Kahdet kolmoset', 'Suora ja kolmoset', 'Kaksi suoraa',
+           'Kolmet kolmoset', 'Suora ja kahdet kolmoset', 'Kaksi suoraa ja kolmoset',
+           'kolme suoraa', 'Neljät kolmoset']
+
+kierrosLyhenne = ['2xK', 'S&K', '2xS', '3xK', 'S&2xK', '2xS&K', '3xS', '4xK']
