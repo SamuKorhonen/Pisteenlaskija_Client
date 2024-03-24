@@ -23,7 +23,7 @@ ikkunaX = 1280
 ikkunaY = 720
 vasenMarginaali = 10
 ylaMarginaali = 50
-kokoPisteMarginaali = 423
+kokoPisteMarginaali = 425
 sijaintiXOletus = 170
 sijaintiYOletus = 50
 kierrosMaara = 8
@@ -32,7 +32,7 @@ fonttiVari = '#383eB8'
 
 ikkuna_leveys = 1920
 ikkuna_korkeus = 1080
-ekaKierrosYLocation = 108
+ekaKierrosYLocation = 82
 
 
 kierros = ['Kirjoita pelaajien nimet', 'Kahdet kolmoset', 'Suora ja kolmoset', 'Kaksi suoraa',

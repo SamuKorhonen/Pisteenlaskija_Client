@@ -30,7 +30,7 @@ class PisteenlaskijaUI(Frame):
             y_temp += fonttiKokoIso
 
         self.text_Kokopiste = self.rootCanvas.create_text(vasenMarginaali, kokoPisteMarginaali,
-                                                          anchor="w", text="Kokonaispisteet", font=self.perusFontti,
+                                                          anchor="w", text="Kokonaispisteet:", font=self.perusFontti,
                                                           fill=fonttiVari)
 
         self.rootCanvas.pack()
@@ -44,11 +44,11 @@ class PisteenlaskijaUI(Frame):
         ikkuna_korkeus_scaled = self.master.winfo_height()
 
         # Updated Locations:
-        eka_kierros_y_location_scaled = int(0.12 * ikkuna_korkeus_scaled)
-        koko_piste_marginaali_scaled = int(ikkuna_korkeus_scaled * (423 / 720))
-        fontti_koko_iso_scaled = int(ikkuna_korkeus_scaled * (38 / 720))
-        fontti_koko_scaled = int(ikkuna_korkeus_scaled * (24 / 720))
-        fontti_koko_pieni_scaled = int(ikkuna_korkeus_scaled * (16 / 720))
+        eka_kierros_y_location_scaled = int(ikkuna_korkeus_scaled * (ekaKierrosYLocation / 720))
+        koko_piste_marginaali_scaled = int(ikkuna_korkeus_scaled * (kokoPisteMarginaali / 720))
+        fontti_koko_iso_scaled = int(ikkuna_korkeus_scaled * (fonttiKokoIso / 720))
+        fontti_koko_scaled = int(ikkuna_korkeus_scaled * (fonttiKoko / 720))
+        fontti_koko_pieni_scaled = int(ikkuna_korkeus_scaled * (fonttiKokoPieni / 720))
 
         # Update font -objects to correct size:
         self.perusFontti = Font(family='Arial', size=fontti_koko_scaled)
@@ -59,7 +59,7 @@ class PisteenlaskijaUI(Frame):
         y_temp = eka_kierros_y_location_scaled
         for item in range(len(self.kierrosText)):
             self.rootCanvas.coords(self.kierrosText[item], vasenMarginaali, y_temp)
-            self.rootCanvas.itemconfig(self.kierrosText[item], font=self.perusFontti)
+            self.rootCanvas.itemconfig(self.kierrosText[item], font=self.pieniFontti)
             y_temp += fontti_koko_iso_scaled
 
         self.rootCanvas.coords(self.text_Kokopiste, vasenMarginaali, koko_piste_marginaali_scaled)
