@@ -40,31 +40,31 @@ class PisteenlaskijaUI(Frame):
 
     def scale_objects(self, event=None):
         # For scaling update the screen_width and screen_height variables
-        ikkuna_leveys = self.master.winfo_width()
-        ikkuna_korkeus = self.master.winfo_height()
+        ikkuna_leveys_scaled = self.master.winfo_width()
+        ikkuna_korkeus_scaled = self.master.winfo_height()
 
         # Updated Locations:
-        ekaKierrosYLocation = int(0.12*ikkuna_korkeus)
-        kokoPisteMarginaali = int(ikkuna_korkeus * (423/720))
-        fonttiKokoIso = int(ikkuna_korkeus * (38/720))
-        fonttiKoko = int(ikkuna_korkeus * (24/720))
-        fonttiKokoPieni = int(ikkuna_korkeus * (16/720))
+        eka_kierros_y_location_scaled = int(0.12 * ikkuna_korkeus_scaled)
+        koko_piste_marginaali_scaled = int(ikkuna_korkeus_scaled * (423 / 720))
+        fontti_koko_iso_scaled = int(ikkuna_korkeus_scaled * (38 / 720))
+        fontti_koko_scaled = int(ikkuna_korkeus_scaled * (24 / 720))
+        fontti_koko_pieni_scaled = int(ikkuna_korkeus_scaled * (16 / 720))
 
         # Update font -objects to correct size:
-        self.perusFontti = Font(family='Arial', size=fonttiKoko)
-        self.isoFontti = Font(family='Arial', size=fonttiKokoIso)
-        self.pieniFontti = Font(family='Arial', size=fonttiKokoPieni)
+        self.perusFontti = Font(family='Arial', size=fontti_koko_scaled)
+        self.isoFontti = Font(family='Arial', size=fontti_koko_iso_scaled)
+        self.pieniFontti = Font(family='Arial', size=fontti_koko_pieni_scaled)
 
-        #update texts based of the updated variables above
-        y_temp = ekaKierrosYLocation
+        # update texts based of the updated variables above
+        y_temp = eka_kierros_y_location_scaled
         for item in range(len(self.kierrosText)):
             self.rootCanvas.coords(self.kierrosText[item], vasenMarginaali, y_temp)
             self.rootCanvas.itemconfig(self.kierrosText[item], font=self.perusFontti)
-            y_temp += fonttiKokoIso
+            y_temp += fontti_koko_iso_scaled
 
-        self.rootCanvas.coords(self.text_Kokopiste, vasenMarginaali, kokoPisteMarginaali)
+        self.rootCanvas.coords(self.text_Kokopiste, vasenMarginaali, koko_piste_marginaali_scaled)
         self.rootCanvas.itemconfig(self.text_Kokopiste, font=self.perusFontti)
-        self.taustakuva_resized = self.taustakuva_original.resize((ikkuna_leveys, ikkuna_korkeus))
+        self.taustakuva_resized = self.taustakuva_original.resize((ikkuna_leveys_scaled, ikkuna_korkeus_scaled))
         self.uusi_tausta = ImageTk.PhotoImage(self.taustakuva_resized)
         self.rootCanvas.itemconfig(self.muokattu_tausta, image=self.uusi_tausta)
 
