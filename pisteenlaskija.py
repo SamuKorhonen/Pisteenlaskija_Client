@@ -16,7 +16,7 @@ class PisteenlaskijaUI(Frame):
 
         self.kierrosText = []
 
-        self.taustakuva_original = Image.open(".venv/media/tausta.png")
+        self.taustakuva_original = Image.open("media/tausta.bmp")
         self.taustakuva_resized = self.taustakuva_original.resize((ikkuna_leveys, ikkuna_korkeus))
         self.uusi_tausta = ImageTk.PhotoImage(self.taustakuva_resized)
 
