@@ -14,6 +14,8 @@ class PisteenlaskijaUI(Frame):
         self.isoFontti = Font(family='Arial', size=fonttiKokoIso)
         self.pieniFontti = Font(family='Arial', size=fonttiKokoPieni)
 
+        self.nimi_var =StringVar()
+
         self.kierrosText = []
         self.pelaajaText = []
 
@@ -35,6 +37,14 @@ class PisteenlaskijaUI(Frame):
                                                           anchor="w", text="Kokonaispisteet:", font=self.perusFontti,
                                                           fill=fonttiVari)
 
+        self.pelaajaTemp = {'nimi': ''}
+        self.pelaajaUusiTemp = Entry(self, textvariable=self.nimi_var)
+        self.pelaajaUusiTemp.pack()
+
+        print(pelaaja)
+
+        master.bind('<Return>', self.setName)
+
         y_temp = kokoPisteMarginaali + fonttiKokoIso
         for i in pelaaja:
             text = self.rootCanvas.create_text(vasenMarginaali+30, y_temp, anchor="w", text=i['nimi'],
@@ -46,6 +56,25 @@ class PisteenlaskijaUI(Frame):
         self.pack()
 
         master.bind("<Configure>", self.scale_objects)
+
+
+    def setName(self, event=None):
+        self.pelaajaTemp['nimi'] = self.nimi_var.get()
+        pelaaja.append(self.pelaajaTemp)
+
+        text = self.rootCanvas.create_text(vasenMarginaali + 30, 50, anchor="w", text=self.pelaajaTemp['nimi'],
+                                    font=self.perusFontti, fill=fonttiVari)
+        self.pelaajaText.append(text)
+
+        self.scale_objects()
+
+        self.pelaajaTemp = {'nimi': ''}
+        #self.nimi_var = ''
+        print(pelaaja)
+
+
+
+        self.pelaajaUusiTemp.pack()
 
     def scale_objects(self, event=None):
         # For scaling update the screen_width and screen_height variables
@@ -92,6 +121,6 @@ class PisteenlaskijaUI(Frame):
 root = Tk()
 root.title("Sanghai Pisteenlaskija")
 root.geometry("1280x720")
-pelaaja = [{'nimi': 'pekka'}, {'nimi': 'matti'}]
+pelaaja = []
 PisteenlaskijaUI(root)
 root.mainloop()
