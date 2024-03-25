@@ -15,24 +15,26 @@ laatikonLeveys = 200
 syotto = False
 sarakkeenLeveys = 200
 
-fonttiKoko = 24
-fonttiKokoIso = 38
-fonttiKokoPieni = 16
+fonttiKoko = 36
+fonttiKokoIso = 58
+fonttiKokoPieni = 24
 fonttiKokoVer = 20
-ikkunaX = 1280
-ikkunaY = 720
+ikkunaXScale = 1920
+ikkunaYScale = 1080
 vasenMarginaali = 10
+vasenKokoPisteNimiMarginaali = 40
+vasenKokoPisteMarginaali = 250
 ylaMarginaali = 50
-kokoPisteMarginaali = 425
+kokoPisteMarginaali = 638
 sijaintiXOletus = 170
 sijaintiYOletus = 50
 kierrosMaara = 8
 tallennuspaikat = 9
 fonttiVari = '#383eB8'
 
-ikkuna_leveys = 1920
-ikkuna_korkeus = 1080
-ekaKierrosYLocation = 82
+ikkuna_leveys = 1280
+ikkuna_korkeus = 720
+ekaKierrosYLocation = 123
 
 
 kierros = ['Kirjoita pelaajien nimet', 'Kahdet kolmoset', 'Suora ja kolmoset', 'Kaksi suoraa',
