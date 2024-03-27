@@ -14,7 +14,7 @@ class PisteenlaskijaUI(Frame):
         self.isoFontti = Font(family='Arial', size=fonttiKokoIso)
         self.pieniFontti = Font(family='Arial', size=fonttiKokoPieni)
 
-        self.nimi_var =StringVar()
+        self.nimi_var = StringVar()
 
         self.kierrosText = []
         self.pelaajaText = []
@@ -38,16 +38,19 @@ class PisteenlaskijaUI(Frame):
                                                           fill=fonttiVari)
 
         self.pelaajaTemp = {'nimi': ''}
-        self.pelaajaUusiTemp = Entry(self, textvariable=self.nimi_var)
-        self.pelaajaUusiTemp.pack()
+        self.pelaajaUusiTemp = Entry(self.rootCanvas, textvariable=self.nimi_var, font=self.perusFontti)
+        self.pelaajaUusiTemp.place(x=-100, y=-100)
+        self.pelaajaUusiTemp.focus_set()
+        # self.pelaajaUusiTemp.pack()
 
-        print(pelaaja)
+        self.pelaajaNimi = self.rootCanvas.create_text(150, 30, text="", font=self.perusFontti, fill=fonttiVari)
+        master.bind('<KeyPress>', self.update_pelaaja_nimi)
 
-        master.bind('<Return>', self.setName)
+        master.bind('<Return>', self.set_name)
 
         y_temp = kokoPisteMarginaali + fonttiKokoIso
         for i in pelaaja:
-            text = self.rootCanvas.create_text(vasenMarginaali+30, y_temp, anchor="w", text=i['nimi'],
+            text = self.rootCanvas.create_text(vasenMarginaali + 30, y_temp, anchor="w", text=i['nimi'],
                                                font=self.perusFontti, fill=fonttiVari)
             self.pelaajaText.append(text)
             y_temp += fonttiKokoIso
@@ -57,24 +60,26 @@ class PisteenlaskijaUI(Frame):
 
         master.bind("<Configure>", self.scale_objects)
 
+    def update_pelaaja_nimi(self, event=None):
+        self.rootCanvas.itemconfig(self.pelaajaNimi, text=self.pelaajaUusiTemp.get())
 
-    def setName(self, event=None):
+    def set_name(self, event=None):
         self.pelaajaTemp['nimi'] = self.nimi_var.get()
         pelaaja.append(self.pelaajaTemp)
 
         text = self.rootCanvas.create_text(vasenMarginaali + 30, 50, anchor="w", text=self.pelaajaTemp['nimi'],
-                                    font=self.perusFontti, fill=fonttiVari)
+                                           font=self.perusFontti, fill=fonttiVari)
         self.pelaajaText.append(text)
 
         self.scale_objects()
 
         self.pelaajaTemp = {'nimi': ''}
-        #self.nimi_var = ''
+        # self.nimi_var = ''
         print(pelaaja)
 
-
-
-        self.pelaajaUusiTemp.pack()
+        self.pelaajaUusiTemp.delete(0, END)
+        self.rootCanvas.itemconfig(self.pelaajaNimi, text=self.pelaajaUusiTemp.get())
+        self.pelaajaUusiTemp.place(x=-100, y=-100)
 
     def scale_objects(self, event=None):
         # For scaling update the screen_width and screen_height variables
@@ -121,6 +126,7 @@ class PisteenlaskijaUI(Frame):
 root = Tk()
 root.title("Sanghai Pisteenlaskija")
 root.geometry("1280x720")
+root.wm_attributes('-transparentcolor', 'green')
 pelaaja = []
 PisteenlaskijaUI(root)
 root.mainloop()
