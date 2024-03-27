@@ -13,7 +13,7 @@ laatikkoX = 0
 laatikkoY = 0
 laatikonLeveys = 200
 syotto = False
-sarakkeenLeveys = 200
+
 
 fonttiKoko = 36
 fonttiKokoIso = 58
@@ -27,10 +27,15 @@ vasenKokoPisteMarginaali = 250
 ylaMarginaali = 50
 kokoPisteMarginaali = 638
 sijaintiXOletus = 170
-sijaintiYOletus = 50
+sijaintiYOletus = 96
 kierrosMaara = 8
 tallennuspaikat = 9
 fonttiVari = '#383eB8'
+
+sarakkeenLeveys = (ikkunaXScale - sijaintiXOletus) / (pelaajaMaara + 1)
+
+valintaSijaintiY = sijaintiYOletus
+valintaSijaintiX = sijaintiXOletus
 
 ikkuna_leveys = 1280
 ikkuna_korkeus = 720
