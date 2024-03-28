@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import ImageTk, Image
 from globals import *
 from tkinter.font import Font
+import keyboard
 
 # Create default values
 
@@ -57,18 +58,9 @@ class PisteenlaskijaUI(Frame):
 
         self.pelaajaNimi = self.rootCanvas.create_text(valintaSijaintiX+(sarakkeenLeveys/2), valintaSijaintiY-fonttiKoko,
                                                        text="", font=self.perusFontti, fill=fonttiVari)
-        master.bind('<KeyPress>', self.update_pelaaja_nimi)
+        master.bind('<KeyPress>', self.painettu)
 
         master.bind('<Return>', self.set_name)
-
-        '''
-        y_temp = kokoPisteMarginaali + fonttiKokoIso
-        for i in pelaaja:
-            text = self.rootCanvas.create_text(vasenMarginaali + 30, y_temp, anchor="w", text=i['nimi'],
-                                               font=self.perusFontti, fill=fonttiVari)
-            self.pelaajaText.append(text)
-            y_temp += fonttiKokoIso
-        '''
 
         self.rootCanvas.pack()
         self.pack()
@@ -77,6 +69,11 @@ class PisteenlaskijaUI(Frame):
 
     def update_pelaaja_nimi(self, event=None):
         self.rootCanvas.itemconfig(self.pelaajaNimi, text=self.pelaajaUusiTemp.get())
+
+    def painettu(self, event=None):
+
+        if keyboard.read_key() in list['q', 'w']:
+            self.update_pelaaja_nimi()
 
     def set_name(self, event=None):
         # self.pelaajaTemp['nimi'] = self.nimi_var.get()
