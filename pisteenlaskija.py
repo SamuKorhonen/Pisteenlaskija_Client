@@ -11,8 +11,6 @@ To-Do List:
 - Serveri yhteys
 - Turnaus versio muokkaukset
 - Virhe ilmoitukset ja tunnistukset esim pisteistä
-    - Pisteissä virheet
-    - Pelaajamäärässä virhe
     - yhteydessä palvelimeen virhe
     
 - Ohje näyttö
@@ -99,6 +97,7 @@ class PisteenlaskijaUI(Frame):
         self.text_Kokopiste = self.rootCanvas.create_text(vasenMarginaali, kokoPisteMarginaali,
                                                           anchor="w", text="Kokonaispisteet:", font=self.perusFontti,
                                                           fill=fonttiVari)
+        self.virhe_teksti = self.rootCanvas.create_text(500, 400, text='', font=self.isoFontti, fill='red')
 
         # Varmistetaan onko jotain näppäintä painettu
         # ja jos on mennään "painettu" -funktiossa varmistamaan mitä sitten tehdään
@@ -124,74 +123,85 @@ class PisteenlaskijaUI(Frame):
         painallus = event.keysym
         kirjain = event.char
         print(painallus)
-        global valittu
-        global valintaSijaintiX
-        global valintaSijaintiY
-        global pelaaja
-        global valittuKierros
-        global kierrosNumero
+        global valittu, valintaSijaintiY, valintaSijaintiX, pelaaja, valittuKierros, kierrosNumero
 
-        if painallus == "Right" or painallus == "Tab":
-            # self.set_name()
-            valintaSijaintiX += sarakkeenLeveys
-            valittu += 1
-            if valittu > pelaajaMaara:
-                valintaSijaintiX = sijaintiXOletus
-                valittu = 0
-            self.scale_objects()
-        elif painallus == "Left":
-            # self.set_name()
-            valintaSijaintiX = valintaSijaintiX - sarakkeenLeveys
-            valittu = valittu - 1
-            if valittu < 0:
-                valintaSijaintiX = sijaintiXOletus + (pelaajaMaara * sarakkeenLeveys)
-                valittu = pelaajaMaara
-            self.scale_objects()
-        elif painallus == "Down":
-            valittuKierros += 1
-            valintaSijaintiY += fonttiKokoIso
-            if valittuKierros > kierrosNumero:
-                valittuKierros = 0
-                valintaSijaintiY = sijaintiYOletus
-            self.scale_objects()
-        elif painallus == "Up":
-            valittuKierros = valittuKierros - 1
-            valintaSijaintiY = valintaSijaintiY - fonttiKokoIso
-            if valittuKierros < 0:
-                valittuKierros = kierrosNumero
-                valintaSijaintiY = sijaintiYOletus
-            self.scale_objects()
-        elif painallus == "F9":
-            self.show_settings()
+        painallus_valinnat = {
+            'Right': self.liiku_oikealle,
+            'Tab': self.liiku_oikealle,
+            'Left': self.liiku_vasemmalle,
+            'Down': self.liiku_alas,
+            'Up': self.liiku_ylos,
+            'F9': self.show_settings,
+            'Return': self.seuraava_kierros,
+            'KP_Enter': self.seuraava_kierros,
+            'edit': self.edit_pelaaja_nimi
+        }
 
-        elif painallus == "Return" or painallus == "KP_Enter":
-            self.seuraava_kierros()
+        if painallus in painallus_valinnat:
+            painallus_valinnat[painallus]()
             self.scale_objects()
         else:
-            if valittuKierros == 0:
-                if kirjain == "\b":
-                    temp_nimi = pelaaja[valittu]['nimi'][:-1]
-                else:
-                    temp_nimi = pelaaja[valittu]['nimi'] + kirjain
+            painallus_valinnat['edit'](kirjain)
 
-                pelaaja[valittu]['nimi'] = temp_nimi
-                self.rootCanvas.itemconfig(self.pelaajaText[valittu], text=temp_nimi)
-                self.rootCanvas.itemconfig(self.pelaajaNimi[valittu], text=temp_nimi)
-                # print(temp_nimi)
+    def liiku_oikealle(self):
+        global valintaSijaintiX, sarakkeenLeveys, valittu
+        valintaSijaintiX += sarakkeenLeveys
+        valittu += 1
+        if valittu > pelaajaMaara:
+            valintaSijaintiX = sijaintiXOletus
+            valittu = 0
+
+    def liiku_vasemmalle(self):
+        global valintaSijaintiX, valittu
+        valintaSijaintiX = valintaSijaintiX - sarakkeenLeveys
+        valittu = valittu - 1
+        if valittu < 0:
+            valintaSijaintiX = sijaintiXOletus + (pelaajaMaara * sarakkeenLeveys)
+            valittu = pelaajaMaara
+
+    def liiku_ylos(self):
+        global valittuKierros, valintaSijaintiY
+        valittuKierros = valittuKierros - 1
+        valintaSijaintiY = valintaSijaintiY - fonttiKokoIso
+        if valittuKierros < 0:
+            valittuKierros = kierrosNumero
+            valintaSijaintiY = sijaintiYOletus
+
+    def liiku_alas(self):
+        global valittuKierros, valintaSijaintiY
+        valittuKierros += 1
+        valintaSijaintiY += fonttiKokoIso
+        if valittuKierros > kierrosNumero:
+            valittuKierros = 0
+            valintaSijaintiY = sijaintiYOletus
+
+    def edit_pelaaja_nimi(self, kirjain):
+        global pelaaja, valittuKierros, valittu
+
+        if valittuKierros == 0:
+            if kirjain == "\b":
+                temp_nimi = pelaaja[valittu]['nimi'][:-1]
             else:
-                if kirjain == "\b":
-                    temp_pisteet = str(pelaaja[valittu]['pisteet'][valittuKierros - 1])[:-1]
-                    if not temp_pisteet:
-                        temp_pisteet = '0'
+                temp_nimi = pelaaja[valittu]['nimi'] + kirjain
 
-                elif kirjain.isdigit():
-                    temp_pisteet = str(pelaaja[valittu]['pisteet'][valittuKierros - 1]) + kirjain
-                else:
-                    return
+            pelaaja[valittu]['nimi'] = temp_nimi
+            self.rootCanvas.itemconfig(self.pelaajaText[valittu], text=temp_nimi)
+            self.rootCanvas.itemconfig(self.pelaajaNimi[valittu], text=temp_nimi)
+            # print(temp_nimi)
+        else:
+            if kirjain == "\b":
+                temp_pisteet = str(pelaaja[valittu]['pisteet'][valittuKierros - 1])[:-1]
+                if not temp_pisteet:
+                    temp_pisteet = '0'
 
-                pelaaja[valittu]['pisteet'][valittuKierros - 1] = temp_pisteet
-                self.rootCanvas.itemconfig(self.kierrosPisteet[valittuKierros][valittu], text=temp_pisteet)
-                # print(pelaaja[valittu], valittuKierros)
+            elif kirjain.isdigit():
+                temp_pisteet = str(pelaaja[valittu]['pisteet'][valittuKierros - 1]) + kirjain
+            else:
+                return
+
+            pelaaja[valittu]['pisteet'][valittuKierros - 1] = temp_pisteet
+            self.rootCanvas.itemconfig(self.kierrosPisteet[valittuKierros][valittu], text=temp_pisteet)
+            # print(pelaaja[valittu], valittuKierros)
 
     def hiiren_valinta(self, event):
         hiiri_x = event.x
@@ -204,20 +214,16 @@ class PisteenlaskijaUI(Frame):
 
     def seuraava_kierros(self):
 
-        global kierrosNumero
-        global pelaaja
-        global pelaajaMaara
-        global valintaSijaintiY
-        global valintaSijaintiX
-        global sarakkeenLeveys
-        global valittuKierros
-        global virhe
+        global kierrosNumero, pelaaja, pelaajaMaara, valintaSijaintiX, valintaSijaintiY, sarakkeenLeveys
+        global valittuKierros, virhe
 
         self.virheen_tarkistus()
         if virhe:
             print("virhe on: " + str(virhe))
+            self.virheen_tulostus(virhe)
 
         if virhe == 0:
+            self.rootCanvas.itemconfig(self.virhe_teksti, text='')
             if kierrosNumero == 0:
                 pelaaja = [item for item in pelaaja if item['nimi']]
                 self.pelaajaText = [item for item in self.pelaajaText if self.rootCanvas.itemconfig(item)['text'][4]]
@@ -321,6 +327,18 @@ class PisteenlaskijaUI(Frame):
                     if int(piste) > 200 or int(piste) == 1:
                         virhe = 1
 
+    def virheen_tulostus(self, virhe_numero):
+
+        valinnat = {
+            1: 'Tarkista Pisteet',
+            2: 'Tarkista Pisteet',
+            3: 'Pelaajia on liian vähän',
+            4: 'Nimet ovat samanlaiset'
+        }
+        print("olen tulostuksessa ja virhe_numero on " + str(virhe_numero) + " ja sen teksti on" + valinnat[virhe_numero])
+        if virhe_numero in valinnat:
+            self.rootCanvas.itemconfig(self.virhe_teksti, text=valinnat[virhe_numero])
+
     def scale_objects(self, event=None):
         # For scaling update the screen_width and screen_height variables
         ikkuna_leveys_scaled = self.master.winfo_width()
@@ -340,6 +358,8 @@ class PisteenlaskijaUI(Frame):
         nimi_sijainti_y_scaled = ikkuna_korkeus_scaled * (sijaintiYOletus / ikkunaYScale)
         sarakkeen_leveys_scaled = ikkuna_leveys_scaled * (sarakkeenLeveys / ikkunaXScale)
         sijainti_x_oletus_scaled = ikkuna_leveys_scaled * (sijaintiXOletus / ikkunaXScale)
+        virheen_sijainti_x_scaled = ikkuna_leveys_scaled * (1250/ikkunaXScale)
+        virheen_sijainti_y_scaled = ikkuna_korkeus_scaled * (900/ikkunaYScale)
 
         # Update font -objects to correct size:
         self.perusFontti = Font(family='Arial', size=int(fontti_koko_scaled))
@@ -386,6 +406,8 @@ class PisteenlaskijaUI(Frame):
                                valinta_sijainti_x_scaled + sarakkeen_leveys_scaled, valinta_sijainti_y_scaled)
         self.rootCanvas.coords(self.text_Kokopiste, vasen_marginaali_scaled, koko_piste_marginaali_scaled)
         self.rootCanvas.itemconfig(self.text_Kokopiste, font=self.perusFontti)
+        self.rootCanvas.coords(self.virhe_teksti, virheen_sijainti_x_scaled, virheen_sijainti_y_scaled)
+        self.rootCanvas.itemconfig(self.virhe_teksti, font=self.isoFontti)
         self.rootCanvas.configure(height=ikkuna_korkeus_scaled, width=ikkuna_leveys_scaled)
         self.taustakuva_resized = self.taustakuva_original.resize((ikkuna_leveys_scaled, ikkuna_korkeus_scaled),
                                                                   Image.Resampling.LANCZOS)
