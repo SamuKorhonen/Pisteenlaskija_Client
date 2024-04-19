@@ -218,6 +218,7 @@ class PisteenlaskijaUI(Frame):
         koko_piste_marginaali_scaled = ikkuna_korkeus_scaled * (kokoPisteMarginaali / ikkunaYScale)
         vasen_marginaali_scaled = ikkuna_leveys_scaled * (vasenMarginaali / ikkunaXScale)
         vasen_kokopiste_nimi_marginaali_scaled = ikkuna_leveys_scaled * (vasenKokoPisteNimiMarginaali / ikkunaXScale)
+        vasen_kokopiste_piste_marginaali_scaled = ikkuna_leveys_scaled * (vasenKokoPisteMarginaali / ikkunaXScale)
         fontti_koko_iso_scaled = ikkuna_korkeus_scaled * (fonttiKokoIso / ikkunaYScale)
         fontti_koko_scaled = ikkuna_korkeus_scaled * (fonttiKoko / ikkunaYScale)
         fontti_koko_pieni_scaled = ikkuna_korkeus_scaled * (fonttiKokoPieni / ikkunaYScale)
@@ -261,6 +262,11 @@ class PisteenlaskijaUI(Frame):
                 self.rootCanvas.itemconfig(item2, font=self.perusFontti)
                 x_temp += sarakkeen_leveys_scaled
             x_temp = sijainti_x_oletus_scaled + (sarakkeen_leveys_scaled / 2)
+            y_temp += fontti_koko_iso_scaled
+
+        y_temp = koko_piste_marginaali_scaled + fontti_koko_iso_scaled
+        for item in self.kokoPisteTeksti:
+            self.rootCanvas.coords(item, vasen_kokopiste_piste_marginaali_scaled, y_temp)
             y_temp += fontti_koko_iso_scaled
 
         self.rootCanvas.coords(self.valintaViiva, valinta_sijainti_x_scaled, valinta_sijainti_y_scaled,
