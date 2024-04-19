@@ -5,6 +5,20 @@ from tkinter.font import Font
 
 pelaajaMaara = 5
 
+class AsetuksetIkkuna(Toplevel):
+    def __init__(self, master):
+        super().__init__(master)
+        self.master = master
+        self.title("Settings")
+        # self.overrideredirect(True)
+        self.geometry("300x200")
+
+        self.label = Label(self, text="Setting 1:")
+        self.label.pack()
+
+        self.entry = Entry(self)
+        self.entry.pack()
+
 
 class PisteenlaskijaUI(Frame):
     # Käyttöliittymä CLASS, jonka sisällä luodaan visuaalinen kokonaisuus
@@ -14,6 +28,7 @@ class PisteenlaskijaUI(Frame):
         super().__init__(master=master)
         self.master = master
         self.pack()
+        self.settings_window = None
         self.perusFontti = Font(family='Arial', size=fonttiKoko)
         self.isoFontti = Font(family='Arial', size=fonttiKokoIso)
         self.pieniFontti = Font(family='Arial', size=fonttiKokoPieni)
@@ -73,6 +88,13 @@ class PisteenlaskijaUI(Frame):
         # Jos ikkunan koko muuttuu, niin skaalataan objektit muuttuneen ikkunan mukaiseksi
         master.bind("<Configure>", self.scale_objects)
 
+
+    def show_settings(self):
+        # print("olet asetuksissa")
+        if self.settings_window is None or not self.settings_window.winfo_exists():
+            self.settings_window = AsetuksetIkkuna(self.master)
+        else:
+            self.settings_window.destroy()
     def painettu(self, event=None):
 
         # varmistetaan mitä on painettu
@@ -116,6 +138,8 @@ class PisteenlaskijaUI(Frame):
                 valittuKierros = kierrosNumero
                 valintaSijaintiY = sijaintiYOletus
             self.scale_objects()
+        elif painallus == "F9":
+            self.show_settings()
 
         elif painallus == "Return" or painallus == "KP_Enter":
             self.seuraava_kierros()
