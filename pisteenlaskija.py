@@ -22,6 +22,7 @@ class PisteenlaskijaUI(Frame):
         self.pelaajaText = []       # Tämä on kokonaispisteissä näkyvien pelaajien nimien teksti objetien säilömiseen
         self.pelaajaNimi = []       # Tämä on ylhäällä nimirivillä olevia teksti-objekteja varten
         self.kierrosPisteet = []
+        self.kokoPisteTeksti = []
         for i_temp in range(9):
             self.kierrosPisteet.append([])
         print(self.kierrosPisteet)
@@ -80,6 +81,7 @@ class PisteenlaskijaUI(Frame):
         print(painallus)
         global valittu
         global valintaSijaintiX
+        global valintaSijaintiY
         global pelaaja
         global valittuKierros
         global kierrosNumero
@@ -102,12 +104,18 @@ class PisteenlaskijaUI(Frame):
             self.scale_objects()
         elif painallus == "Down":
             valittuKierros += 1
+            valintaSijaintiY += fonttiKokoIso
             if valittuKierros > kierrosNumero:
                 valittuKierros = 0
+                valintaSijaintiY = sijaintiYOletus
+            self.scale_objects()
         elif painallus == "Up":
             valittuKierros = valittuKierros - 1
+            valintaSijaintiY = valintaSijaintiY - fonttiKokoIso
             if valittuKierros < 0:
                 valittuKierros = kierrosNumero
+                valintaSijaintiY = sijaintiYOletus
+            self.scale_objects()
 
         elif painallus == "Return" or painallus == "KP_Enter":
             self.seuraava_kierros()
@@ -127,15 +135,15 @@ class PisteenlaskijaUI(Frame):
                 if kirjain == "\b":
                     temp_pisteet = str(pelaaja[valittu]['pisteet'][valittuKierros-1])[:-1]
                     if not temp_pisteet:
-                        temp_pisteet = 0
+                        temp_pisteet = '0'
 
                 elif kirjain.isdigit():
                     temp_pisteet = str(pelaaja[valittu]['pisteet'][valittuKierros-1]) + kirjain
                 else:
                     return
 
-                pelaaja[valittu]['pisteet'][valittuKierros-1] = int(temp_pisteet)
-                self.rootCanvas.itemconfig(self.kierrosPisteet[valittuKierros][valittu], text=str(temp_pisteet))
+                pelaaja[valittu]['pisteet'][valittuKierros-1] = temp_pisteet
+                self.rootCanvas.itemconfig(self.kierrosPisteet[valittuKierros][valittu], text=temp_pisteet)
                 print(pelaaja[valittu], valittuKierros)
 
     def seuraava_kierros(self):
@@ -144,6 +152,7 @@ class PisteenlaskijaUI(Frame):
         global pelaaja
         global pelaajaMaara
         global valintaSijaintiY
+        global valintaSijaintiX
         global sarakkeenLeveys
         global valittuKierros
 
@@ -155,25 +164,49 @@ class PisteenlaskijaUI(Frame):
             sarakkeenLeveys = (ikkunaXScale - sijaintiXOletus) / (pelaajaMaara + 1)
             kierrosNumero += 1
             valintaSijaintiY += fonttiKokoIso
+            valintaSijaintiX = sijaintiXOletus + (sarakkeenLeveys*valittu)
             valittuKierros += 1
             x_temp = sijaintiXOletus + (sarakkeenLeveys / 2)
             y_temp = ekaKierrosYLocation + (fonttiKokoIso * kierrosNumero)
             kierros_numero_oikea = kierrosNumero-1
             print(kierros_numero_oikea, pelaaja[0]['pisteet'][0])
             for item in range(len(pelaaja)):
-                temp_item = self.rootCanvas.create_text(x_temp, y_temp, text='0',
+                temp_item = self.rootCanvas.create_text(x_temp, y_temp, text='',
                                                         font=self.perusFontti, fill=fonttiVari)
+                temp_item2 = self.rootCanvas.create_text(vasenMarginaali, kokoPisteMarginaali, text='',
+                                                         font=self.perusFontti, fill=fonttiVari)
                 self.kierrosPisteet[kierrosNumero].append(temp_item)
+                self.kokoPisteTeksti.append(temp_item2)
                 x_temp += sarakkeenLeveys
         elif kierrosNumero < 9:
             kierrosNumero += 1
-            valintaSijaintiY += fonttiKoko
-            valittuKierros += 1
+            valintaSijaintiY = fonttiKokoIso*kierrosNumero + sijaintiYOletus
+            valittuKierros = kierrosNumero
+            self.pisteiden_laskenta()
+            x_temp = sijaintiXOletus + (sarakkeenLeveys / 2)
+            y_temp = ekaKierrosYLocation + (fonttiKokoIso * kierrosNumero)
+            # kierros_numero_oikea = kierrosNumero - 1
+            # print(kierros_numero_oikea, pelaaja[0]['pisteet'][0])
+            for item in range(len(pelaaja)):
+                temp_item = self.rootCanvas.create_text(x_temp, y_temp, text='',
+                                                        font=self.perusFontti, fill=fonttiVari)
+                self.kierrosPisteet[kierrosNumero].append(temp_item)
+                x_temp += sarakkeenLeveys
+            for item in range(len(pelaaja)):
+                self.rootCanvas.itemconfig(self.kokoPisteTeksti[item], text=pelaaja[item]['kokonaisPisteet'])
 
         print(self.pelaajaText, kierrosNumero, pelaajaMaara, sarakkeenLeveys)
 
-    def syotto(self):
-        return
+    def pisteiden_laskenta(self):
+        # kokonaispisteiden laskenta
+
+        for item in pelaaja:
+            kokoPiste = 0
+            for item2 in item['pisteet']:
+                if item2:
+                    kokoPiste += int(item2)
+            item['kokonaisPisteet'] = kokoPiste
+            print(item['kokonaisPisteet'])
 
     def scale_objects(self, event=None):
         # For scaling update the screen_width and screen_height variables
@@ -220,7 +253,7 @@ class PisteenlaskijaUI(Frame):
             x_temp += sarakkeen_leveys_scaled
 
         x_temp = sijainti_x_oletus_scaled + (sarakkeen_leveys_scaled / 2)
-        y_temp = nimi_sijainti_y_scaled
+        y_temp = eka_kierros_y_location_scaled - fontti_koko_iso_scaled
         print(self.kierrosPisteet)
         for item in self.kierrosPisteet:
             for item2 in item:
@@ -228,7 +261,7 @@ class PisteenlaskijaUI(Frame):
                 self.rootCanvas.itemconfig(item2, font=self.perusFontti)
                 x_temp += sarakkeen_leveys_scaled
             x_temp = sijainti_x_oletus_scaled + (sarakkeen_leveys_scaled / 2)
-            y_temp += fontti_koko_scaled
+            y_temp += fontti_koko_iso_scaled
 
         self.rootCanvas.coords(self.valintaViiva, valinta_sijainti_x_scaled, valinta_sijainti_y_scaled,
                                valinta_sijainti_x_scaled + sarakkeen_leveys_scaled, valinta_sijainti_y_scaled)
@@ -247,7 +280,7 @@ root.title("Sanghai Pisteenlaskija")
 root.geometry("1280x720")
 pelaaja = []
 for i in range(pelaajaMaara + 1):
-    temp = {'nimi': '', 'pisteet': [0, 0, 0, 0, 0, 0, 0, 0]}
+    temp = {'nimi': '', 'pisteet': ['', '', '', '', '', '', '', '']}
     pelaaja.append(temp)
 PisteenlaskijaUI(root)
 root.mainloop()
