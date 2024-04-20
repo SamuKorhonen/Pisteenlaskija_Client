@@ -16,7 +16,7 @@ syotto = False
 
 
 fonttiKoko = 36
-fonttiKokoIso = 58
+fonttiKokoIso = 57
 fonttiKokoPieni = 24
 fonttiKokoVer = 20
 ikkunaXScale = 1920
@@ -44,7 +44,7 @@ ekaKierrosYLocation = 123
 
 kierros = ['Kirjoita pelaajien nimet', 'Kahdet kolmoset', 'Suora ja kolmoset', 'Kaksi suoraa',
            'Kolmet kolmoset', 'Suora ja kahdet kolmoset', 'Kaksi suoraa ja kolmoset',
-           'kolme suoraa', 'Neljät kolmoset']
+           'kolme suoraa', 'Neljät kolmoset', 'Peli loppu']
 
 kierrosLyhenne = ['2xK', 'S&K', '2xS', '3xK', 'S&2xK', '2xS&K', '3xS', '4xK']
 peliLoppuTekstit = ['Peli Loppu!', 'Voittajalle onnittelut', 'ja häviäjille parempaa onnea ensi kertaan',
