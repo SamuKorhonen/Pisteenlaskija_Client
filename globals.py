@@ -23,7 +23,7 @@ ikkunaXScale = 1920
 ikkunaYScale = 1080
 vasenMarginaali = 10
 vasenKokoPisteNimiMarginaali = 40
-vasenKokoPisteMarginaali = 350
+vasenKokoPisteMarginaali = 400
 ylaMarginaali = 50
 kokoPisteMarginaali = 638
 sijaintiXOletus = 170
@@ -31,6 +31,12 @@ sijaintiYOletus = 96
 kierrosMaara = 8
 tallennuspaikat = 9
 fonttiVari = '#383eB8'
+virheenSijaintiX = 1250
+virheenSijaintiY = 900
+kierrosNimiX = 1250
+kierrosNimiY = 675
+ohjeTekstiX = 1250
+ohjeTekstiY = 750
 
 sarakkeenLeveys = (ikkunaXScale - sijaintiXOletus) / (pelaajaMaara + 1)
 
