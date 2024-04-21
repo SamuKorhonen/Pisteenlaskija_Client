@@ -18,7 +18,8 @@ syotto = False
 fonttiKoko = 36
 fonttiKokoIso = 57
 fonttiKokoPieni = 24
-fonttiKokoVer = 20
+fonttiKokoVer = 18
+fonttiKokoJ = 14
 ikkunaXScale = 1920
 ikkunaYScale = 1080
 vasenMarginaali = 10
@@ -37,6 +38,8 @@ kierrosNimiX = 1250
 kierrosNimiY = 675
 ohjeTekstiX = 1250
 ohjeTekstiY = 750
+versioTekstiX = 1800
+versioTekstiY = 1050
 
 sarakkeenLeveys = (ikkunaXScale - sijaintiXOletus) / (pelaajaMaara + 1)
 

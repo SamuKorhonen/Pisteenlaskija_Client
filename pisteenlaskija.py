@@ -1,24 +1,26 @@
+import functools
 from tkinter import *
 from PIL import ImageTk, Image
 from globals import *
 from tkinter.font import Font
+from json import *
 
 '''
 To-Do List:
 - tallennus ja lataus
+    + vielä kesken. tallennus tuntuisi toimivan, mutta lataus ei vielä. 
+      tallennukseenkin voidaan tarvita vielä päivityksiä
 - Asetukset
 - Serveri yhteys
 - Turnaus versio muokkaukset
 - Virhe ilmoitukset ja tunnistukset esim pisteistä
     - yhteydessä palvelimeen virhe (tehdään vasta, kun päästään serveriyhteyden koodaukseen)
 - Ohje näyttö (DONE, mutta ruma)
-- Lisää näyttöön versio tieto
-- Hiiren käyttö
-- Jakajan hallinta
 
 '''
 
 pelaajaMaara = 5
+versioNumero = 'Versio 3.0-alpha'
 
 
 class AsetuksetIkkuna(Toplevel):
@@ -74,7 +76,72 @@ class OhjeIkkuna(Toplevel):
     def destroy_window(self, event):
         self.destroy()
 
+class TallennusLatausIkkuna(Toplevel):
+    def __init__(self, master):
+        super().__init__(master)
+        self.master = master
+        self.title("Tallennus ja Lataus")
+        self.geometry("600x500")
 
+        self.frame = Frame(self)
+        self.frame.place(relx=0.5, rely=0.5, anchor='center')
+
+        self.ohjeTekstit = [
+            'Tallennus ja Lataus',
+            ' '
+            'Valitse tallennuspaikka ja sen jälkeen joko tallenna tai lataa',
+            'riippuen kumman haluat tehdä',
+            ' '
+        ]
+        for x in range(len(self.ohjeTekstit)):
+            self.L = Label(self.frame, text=self.ohjeTekstit[x])
+            self.L.grid(row=x, column=0, sticky='nsew')
+
+        current_row = len(self.ohjeTekstit)+1
+        for x in range(3):
+            self.L = Label(self.frame, text="tallennuspaikka: "+str(x))
+            self.L.grid(row=current_row+x, column=0, sticky='nsew')
+            # tiedostoNimi = f'data{x}.json'
+            self.L = Button(self.frame, text='Lataa', command=functools.partial(self.lataa_tallennus, x))
+            self.L.grid(row=current_row+x, column=1, sticky='nsew')
+            self.L = Button(self.frame, text='tallenna', command=functools.partial(self.tallenna_peli, x))
+            self.L.grid(row=current_row+x, column=2, sticky='nsew')
+
+    def lataa_tallennus(self, tiedosto):
+        global pelaaja, pelaajaMaara, kierrosNumero, valittuKierros, valintaSijaintiX, valintaSijaintiY, jakaja
+        global sarakkeenLeveys, valittu
+        tiedosto_nimi=f'data{tiedosto}.json'
+        with open(tiedosto_nimi) as f:
+            haettu_data = load(f)
+
+        pelaaja = haettu_data['pelaaja']
+        pelaajaMaara = haettu_data['pelaajaMaara']
+        kierrosNumero = haettu_data['kierrosNumero']
+        valittuKierros = haettu_data['valittuKierros']
+        valintaSijaintiX = haettu_data['valintaSijaintiX']
+        valintaSijaintiY = haettu_data['valintaSijaintiY']
+        jakaja = haettu_data['jakaja']
+        sarakkeenLeveys = haettu_data['sarakkeenLeveys']
+        valittu = haettu_data['valittu']
+
+
+
+    def tallenna_peli(self, tiedosto):
+        Tallennettava_tiedosto={
+            'pelaaja': pelaaja,
+            'pelaajaMaara': pelaajaMaara,
+            'kierrosNumero': kierrosNumero,
+            'valittuKierros': valittuKierros,
+            'valintaSijaintiX': valintaSijaintiX,
+            'valintaSijaintiY': valintaSijaintiY,
+            'jakaja': jakaja,
+            'sarakkeenLeveys': sarakkeenLeveys,
+            'valittu':valittu
+        }
+
+        tiedosto_nimi= f'data{tiedosto}.json'
+        with open(tiedosto_nimi, 'w') as f:
+            dump(Tallennettava_tiedosto, f)
 
 
 class PisteenlaskijaUI(Frame):
@@ -86,9 +153,12 @@ class PisteenlaskijaUI(Frame):
         self.master = master
         self.settings_window = None
         self.manual_window = None
+        self.lataa_tallenna = None
         self.perusFontti = Font(family='Arial', size=fonttiKoko)
         self.isoFontti = Font(family='Arial', size=fonttiKokoIso)
         self.pieniFontti = Font(family='Arial', size=fonttiKokoPieni)
+        self.verFontti = Font(family='Arial', size=fonttiKokoVer)
+        self.J_Fontti = Font(family='Arial', size=fonttiKokoJ)
         self.nimi_var = StringVar()
         self.kierrosLyhenneText = []  # Tämä on kierros teksti-objektien säilömiseen tarkoitettu array
         self.pelaajaText = []  # Tämä on kokonaispisteissä näkyvien pelaajien nimien teksti objetien säilömiseen
@@ -133,8 +203,10 @@ class PisteenlaskijaUI(Frame):
 
         self.kierrosNimiNyt = self.rootCanvas.create_text(600, 600, text=kierros[0],
                                                           font=self.isoFontti, fill=fonttiVari)
+        self.jakajanMerkki = self.rootCanvas.create_text(10, kokoPisteMarginaali+fonttiKokoIso, text='Ⓙ', font=self.J_Fontti, fill=fonttiVari)
         self.ohjeTeksti = self.rootCanvas.create_text(600, 650, text='Ohjeet painamalla F1',
                                                       font=self.perusFontti, fill=fonttiVari)
+        self.versioTeksti = self.rootCanvas.create_text(versioTekstiX, versioTekstiY, text=versioNumero, font=self.verFontti, fill=fonttiVari)
 
         self.text_Kokopiste = self.rootCanvas.create_text(vasenMarginaali, kokoPisteMarginaali,
                                                           anchor="w", text="Kokonaispisteet:", font=self.perusFontti,
@@ -148,7 +220,6 @@ class PisteenlaskijaUI(Frame):
 
         self.rootCanvas.pack()
         self.pack()
-
         # Jos ikkunan koko muuttuu, niin skaalataan objektit muuttuneen ikkunan mukaiseksi
         master.bind("<Configure>", self.scale_objects)
 
@@ -161,6 +232,13 @@ class PisteenlaskijaUI(Frame):
             self.settings_window = AsetuksetIkkuna(self.master)
         else:
             self.settings_window.destroy()
+            return
+
+    def show_lataa_tallenna(self):
+        if self.lataa_tallenna is None or not self.lataa_tallenna.winfo_exists():
+            self.lataa_tallenna = TallennusLatausIkkuna(self.master)
+        else:
+            self.lataa_tallenna.destroy()
 
     def show_manual(self):
         if self.manual_window is None or not self.manual_window.winfo_exists():
@@ -184,6 +262,7 @@ class PisteenlaskijaUI(Frame):
             'Up': self.liiku_ylos,
             'F9': self.show_settings,
             'F1': self.show_manual,
+            'F4': self.show_lataa_tallenna,
             'Return': self.seuraava_kierros,
             'KP_Enter': self.seuraava_kierros,
             'edit': self.edit_pelaaja_nimi
@@ -215,21 +294,41 @@ class PisteenlaskijaUI(Frame):
 
     @staticmethod
     def liiku_ylos():
-        global valittuKierros, valintaSijaintiY
-        valittuKierros = valittuKierros - 1
-        valintaSijaintiY = valintaSijaintiY - fonttiKokoIso
-        if valittuKierros < 0:
-            valittuKierros = kierrosNumero
-            valintaSijaintiY = sijaintiYOletus
+        global valittuKierros, valintaSijaintiY, kierrosNumero, jakaja
+        if kierrosNumero == 0:
+            jakaja = jakaja - 1
+            if jakaja < 0:
+                jakaja = pelaajaMaara
+            for item in range(len(pelaaja)):
+                if item == jakaja:
+                    pelaaja[item]['jakaja'] = True
+                else:
+                    pelaaja[item]['jakaja'] = False
+        else:
+            valittuKierros = valittuKierros - 1
+            valintaSijaintiY = valintaSijaintiY - fonttiKokoIso
+            if valittuKierros < 0:
+                valittuKierros = kierrosNumero
+                valintaSijaintiY = sijaintiYOletus
 
     @staticmethod
     def liiku_alas():
-        global valittuKierros, valintaSijaintiY
-        valittuKierros += 1
-        valintaSijaintiY += fonttiKokoIso
-        if valittuKierros > kierrosNumero:
-            valittuKierros = 0
-            valintaSijaintiY = sijaintiYOletus
+        global valittuKierros, valintaSijaintiY, kierrosNumero, jakaja, pelaajaMaara
+        if kierrosNumero == 0:
+            jakaja += 1
+            if jakaja > pelaajaMaara:
+                jakaja = 0
+            for item in range(len(pelaaja)):
+                if item == jakaja:
+                    pelaaja[item]['jakaja'] = True
+                else:
+                    pelaaja[item]['jakaja'] = False
+        else:
+            valittuKierros += 1
+            valintaSijaintiY += fonttiKokoIso
+            if valittuKierros > kierrosNumero:
+                valittuKierros = 0
+                valintaSijaintiY = sijaintiYOletus
 
     def edit_pelaaja_nimi(self, kirjain):
         global pelaaja, valittuKierros, valittu
@@ -263,18 +362,59 @@ class PisteenlaskijaUI(Frame):
             # print(pelaaja[valittu], valittuKierros)
 
     def hiiren_valinta(self, event):
+        global valittu, valittuKierros, valintaSijaintiY, valintaSijaintiX, jakaja, pelaaja
         hiiri_x = event.x
         hiiri_y = event.y
         print(hiiri_x, hiiri_y)
-        '''
-        Koodia jossa tunnistetaan missä Hiiri on näytöllä pikseleistä. HUOM! Tässä kohtaa täytyy huomoioida ikkunan 
-        skaalautuvuus, jolloin tarvitsee myös tehdä suhteellinen laskenta eri osien koosta.
-        '''
+        sijainti_x_oletus_scaled = self.master.winfo_width() * (sijaintiXOletus / ikkunaXScale)
+        sijainti_y_oletus_scaled = self.master.winfo_height() * ((sijaintiYOletus-fonttiKokoIso) / ikkunaYScale)
+        fontti_koko_iso_scaled = self.master.winfo_height() * (fonttiKokoIso / ikkunaYScale)
+        sarakkeen_leveys_scaled = self.master.winfo_width() * (sarakkeenLeveys / ikkunaXScale)
+        koko_piste_marginaali_scaled = self.master.winfo_height() * ((kokoPisteMarginaali+(fonttiKokoIso/2)) / ikkunaYScale)
+        vasen_koko_piste_marginaali_scaled = self.master.winfo_width() * (vasenKokoPisteMarginaali / ikkunaXScale)
+
+        if hiiri_x > sijainti_x_oletus_scaled and hiiri_y < koko_piste_marginaali_scaled and hiiri_y > sijainti_y_oletus_scaled:
+            print('Olet pistetaulussa')
+            temp_x = sijainti_x_oletus_scaled + sarakkeen_leveys_scaled
+            for int in range(pelaajaMaara+1):
+                if hiiri_x < temp_x:
+                    print('olet pelaajan ' + str(int) + ' kohdalla')
+                    temp_y = sijainti_y_oletus_scaled + fontti_koko_iso_scaled
+                    for kierros_int in range(kierrosNumero+1):
+                        if hiiri_y < temp_y:
+                            print('olet kierroksen ' + str(kierros_int) + ' kohdalla')
+                            valittu = int
+                            valittuKierros = kierros_int
+                            valintaSijaintiX = sijaintiXOletus + (valittu * sarakkeenLeveys)
+                            valintaSijaintiY = sijaintiYOletus + (valittuKierros * fonttiKokoIso)
+                            self.scale_objects()
+                            break
+                        else:
+                            temp_y += fontti_koko_iso_scaled
+                    break
+                else:
+                    temp_x += sarakkeen_leveys_scaled
+        elif hiiri_x < vasen_koko_piste_marginaali_scaled and hiiri_y > koko_piste_marginaali_scaled:
+            print('olet määrittämässä jakajaa')
+            temp_y = koko_piste_marginaali_scaled + fontti_koko_iso_scaled
+            for int in range(pelaajaMaara+1):
+                if hiiri_y < temp_y:
+                    print('olet jakaja paikalla ' + str(int))
+                    jakaja = int
+                    for item in range(len(pelaaja)):
+                        if item == jakaja:
+                            pelaaja[item]['jakaja'] = True
+                        else:
+                            pelaaja[item]['jakaja'] = False
+                    self.scale_objects()
+                    break
+                else:
+                    temp_y += fontti_koko_iso_scaled
 
     def seuraava_kierros(self):
 
         global kierrosNumero, pelaaja, pelaajaMaara, valintaSijaintiX, valintaSijaintiY, sarakkeenLeveys
-        global valittuKierros, virhe
+        global valittuKierros, virhe, jakaja
 
         self.virheen_tarkistus()
         if virhe:
@@ -298,6 +438,7 @@ class PisteenlaskijaUI(Frame):
                 y_temp = ekaKierrosYLocation + (fonttiKokoIso * kierrosNumero)
                 kierros_numero_oikea = kierrosNumero - 1
                 print(kierros_numero_oikea, pelaaja[0]['pisteet'][0])
+                jakaja_loydetty = False
                 for item in range(len(pelaaja)):
                     temp_item = self.rootCanvas.create_text(x_temp, y_temp, text='',
                                                             font=self.perusFontti, fill=fonttiVari)
@@ -306,6 +447,11 @@ class PisteenlaskijaUI(Frame):
                     self.kierrosPisteet[kierrosNumero].append(temp_item)
                     self.kokoPisteTeksti.append(temp_item2)
                     x_temp += sarakkeenLeveys
+                    if pelaaja[item]['jakaja']:
+                        jakaja_loydetty = True
+                if not jakaja_loydetty:
+                    pelaaja[0]['jakaja'] = True
+
             elif kierrosNumero < 9:
                 if kierrosNumero < 8:
                     kierrosNumero += 1
@@ -313,16 +459,23 @@ class PisteenlaskijaUI(Frame):
                     valittuKierros = kierrosNumero
                     x_temp = sijaintiXOletus + (sarakkeenLeveys / 2)
                     y_temp = ekaKierrosYLocation + (fonttiKokoIso * kierrosNumero)
+                    jakaja += 1
+                    if jakaja > pelaajaMaara:
+                        jakaja = 0
                     for item in range(len(pelaaja)):
                         temp_item = self.rootCanvas.create_text(x_temp, y_temp, text='',
                                                                 font=self.perusFontti, fill=fonttiVari)
                         self.kierrosPisteet[kierrosNumero].append(temp_item)
+                        if item == jakaja:
+                            pelaaja[item]['jakaja'] = True
+                        else:
+                            pelaaja[item]['jakaja'] = False
                         x_temp += sarakkeenLeveys
                 self.pisteiden_laskenta()
 
     def jarjesta_pelaajat(self):
         global pelaaja
-        sorted_pelaaja = sorted(pelaaja, key= lambda x: x['kokonaisPisteet'])
+        sorted_pelaaja = sorted(pelaaja, key=lambda x: x['kokonaisPisteet'])
         for sija, item in enumerate(sorted_pelaaja, start=1):
             item['sijoitus'] = str(sija)
         print(pelaaja, sorted_pelaaja)
@@ -406,6 +559,14 @@ class PisteenlaskijaUI(Frame):
         if virhe_numero in valinnat:
             self.rootCanvas.itemconfig(self.virhe_teksti, text=valinnat[virhe_numero])
 
+    @staticmethod
+    def on_jakaja(pelaaja_nimi):
+        jakaja_func = False
+        for item in pelaaja:
+            if item['nimi'] == pelaaja_nimi:
+                jakaja_func = item['jakaja']
+        return jakaja_func
+
     def scale_objects(self, event=None):
         # For scaling update the screen_width and screen_height variables
         ikkuna_leveys_scaled = self.master.winfo_width()
@@ -420,6 +581,7 @@ class PisteenlaskijaUI(Frame):
         fontti_koko_iso_scaled = ikkuna_korkeus_scaled * (fonttiKokoIso / ikkunaYScale)
         fontti_koko_scaled = ikkuna_korkeus_scaled * (fonttiKoko / ikkunaYScale)
         fontti_koko_pieni_scaled = ikkuna_korkeus_scaled * (fonttiKokoPieni / ikkunaYScale)
+        fontti_koko_ver_scaled = ikkuna_korkeus_scaled * (fonttiKokoVer / ikkunaYScale)
         valinta_sijainti_x_scaled = ikkuna_leveys_scaled * (valintaSijaintiX / ikkunaXScale)
         valinta_sijainti_y_scaled = ikkuna_korkeus_scaled * (valintaSijaintiY / ikkunaYScale)
         nimi_sijainti_y_scaled = ikkuna_korkeus_scaled * (sijaintiYOletus / ikkunaYScale)
@@ -431,11 +593,18 @@ class PisteenlaskijaUI(Frame):
         kierros_nimi_y_scaled = ikkuna_korkeus_scaled * (kierrosNimiY/ikkunaYScale)
         ohje_teksti_x_scaled = ikkuna_leveys_scaled * (ohjeTekstiX/ikkunaXScale)
         ohje_teksti_y_scaled = ikkuna_korkeus_scaled * (ohjeTekstiY/ikkunaYScale)
+        jakajan_merkki_x_scaled = ikkuna_leveys_scaled * (fonttiKokoVer/ikkunaXScale)
+        jakajan_merkki_y_scaled = ikkuna_korkeus_scaled * (sijaintiYOletus/ikkunaYScale)
+        versio_teksti_x_scaled = ikkuna_leveys_scaled * (versioTekstiX/ikkunaXScale)
+        versio_teksti_y_scaled = ikkuna_korkeus_scaled * (versioTekstiY/ikkunaYScale)
+        fontti_koko_j_scaled = ikkuna_korkeus_scaled * (fonttiKokoJ/ikkunaYScale)
 
         # Update font -objects to correct size:
         self.perusFontti = Font(family='Arial', size=int(fontti_koko_scaled))
         self.isoFontti = Font(family='Arial', size=int(fontti_koko_iso_scaled))
         self.pieniFontti = Font(family='Arial', size=int(fontti_koko_pieni_scaled))
+        self.verFontti = Font(family='Arial', size=int(fontti_koko_ver_scaled))
+        self.J_Fontti = Font(family='Arial', size=int(fontti_koko_j_scaled))
 
         # update texts based of the updated variables above
         y_temp = eka_kierros_y_location_scaled
@@ -448,6 +617,15 @@ class PisteenlaskijaUI(Frame):
         for item in range(len(self.pelaajaText)):
             self.rootCanvas.coords(self.pelaajaText[item], vasen_kokopiste_nimi_marginaali_scaled, y_temp)
             self.rootCanvas.itemconfig(self.pelaajaText[item], font=self.perusFontti)
+            pelaajan_nimi = self.rootCanvas.itemcget(self.pelaajaText[item], 'text')
+            if kierrosNumero == 0:
+                if jakaja == item:
+                    self.rootCanvas.coords(self.jakajanMerkki, jakajan_merkki_x_scaled, y_temp)
+                    self.rootCanvas.itemconfig(self.jakajanMerkki, font=self.J_Fontti)
+            else:
+                if self.on_jakaja(self.rootCanvas.itemcget(self.pelaajaText[item], 'text')):
+                    self.rootCanvas.coords(self.jakajanMerkki, jakajan_merkki_x_scaled, y_temp)
+                    self.rootCanvas.itemconfig(self.jakajanMerkki, font=self.J_Fontti)
             y_temp += fontti_koko_iso_scaled
 
         x_temp = sijainti_x_oletus_scaled + (sarakkeen_leveys_scaled / 2)
@@ -484,6 +662,8 @@ class PisteenlaskijaUI(Frame):
         self.rootCanvas.itemconfig(self.text_Kokopiste, font=self.perusFontti)
         self.rootCanvas.coords(self.virhe_teksti, virheen_sijainti_x_scaled, virheen_sijainti_y_scaled)
         self.rootCanvas.itemconfig(self.virhe_teksti, font=self.isoFontti)
+        self.rootCanvas.coords(self.versioTeksti, versio_teksti_x_scaled, versio_teksti_y_scaled)
+        self.rootCanvas.itemconfig(self.versioTeksti, font=self.verFontti)
         self.rootCanvas.configure(height=ikkuna_korkeus_scaled, width=ikkuna_leveys_scaled)
         self.taustakuva_resized = self.taustakuva_original.resize((ikkuna_leveys_scaled, ikkuna_korkeus_scaled),
                                                                   Image.Resampling.LANCZOS)
@@ -497,7 +677,10 @@ root.title("Sanghai Pisteenlaskija")
 root.geometry("1280x720")
 pelaaja = []
 for i in range(pelaajaMaara + 1):
-    temp = {'nimi': '', 'pisteet': ['', '', '', '', '', '', '', '']}
+    if i == 0:
+        temp = {'nimi': '', 'pisteet': ['', '', '', '', '', '', '', ''], 'jakaja': True}
+    else:
+        temp = {'nimi': '', 'pisteet': ['', '', '', '', '', '', '', ''], 'jakaja': False}
     pelaaja.append(temp)
 
 PisteenlaskijaUI(root)
