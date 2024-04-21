@@ -63,7 +63,7 @@ class OhjeIkkuna(Toplevel):
             'seuraavalle kierrokselle painamalla "Enter"',
             ' ',
             'Poistu ohjeista painamalla "F1"',
-            'Tallenna peli = "F4" ja Lataa Peli = "F6"',
+            'Tallenna tai lataa peli painamalla "F4"',
             'Poistu ohjelmasta painamalla "ESC"'
         ]
 
@@ -75,6 +75,7 @@ class OhjeIkkuna(Toplevel):
 
     def destroy_window(self, event):
         self.destroy()
+
 
 class TallennusLatausIkkuna(Toplevel):
     def __init__(self, master):
@@ -127,7 +128,7 @@ class TallennusLatausIkkuna(Toplevel):
 
 
     def tallenna_peli(self, tiedosto):
-        Tallennettava_tiedosto={
+        Tallennettava_tiedosto = {
             'pelaaja': pelaaja,
             'pelaajaMaara': pelaajaMaara,
             'kierrosNumero': kierrosNumero,
@@ -136,10 +137,10 @@ class TallennusLatausIkkuna(Toplevel):
             'valintaSijaintiY': valintaSijaintiY,
             'jakaja': jakaja,
             'sarakkeenLeveys': sarakkeenLeveys,
-            'valittu':valittu
+            'valittu': valittu
         }
 
-        tiedosto_nimi= f'data{tiedosto}.json'
+        tiedosto_nimi = f'data{tiedosto}.json'
         with open(tiedosto_nimi, 'w') as f:
             dump(Tallennettava_tiedosto, f)
 
@@ -223,8 +224,8 @@ class PisteenlaskijaUI(Frame):
         # Jos ikkunan koko muuttuu, niin skaalataan objektit muuttuneen ikkunan mukaiseksi
         master.bind("<Configure>", self.scale_objects)
 
-    def app_frame(self):
-        return
+    def lopeta_peli(self):
+        self.master.destroy()
 
     def show_settings(self):
         # print("olet asetuksissa")
@@ -265,12 +266,14 @@ class PisteenlaskijaUI(Frame):
             'F4': self.show_lataa_tallenna,
             'Return': self.seuraava_kierros,
             'KP_Enter': self.seuraava_kierros,
-            'edit': self.edit_pelaaja_nimi
+            'edit': self.edit_pelaaja_nimi,
+            'Escape': self.lopeta_peli
         }
 
         if painallus in painallus_valinnat:
             painallus_valinnat[painallus]()
-            self.scale_objects()
+            if painallus != 'Escape':
+                self.scale_objects()
         else:
             painallus_valinnat['edit'](kirjain)
 
@@ -349,8 +352,8 @@ class PisteenlaskijaUI(Frame):
         else:
             if kirjain == "\b":
                 temp_pisteet = str(pelaaja[valittu]['pisteet'][valittuKierros - 1])[:-1]
-                if not temp_pisteet:
-                    temp_pisteet = '0'
+                # if not temp_pisteet:
+                    # temp_pisteet = '0'
 
             elif kirjain.isdigit():
                 temp_pisteet = str(pelaaja[valittu]['pisteet'][valittuKierros - 1]) + kirjain
@@ -358,7 +361,7 @@ class PisteenlaskijaUI(Frame):
                 return
 
             pelaaja[valittu]['pisteet'][valittuKierros - 1] = temp_pisteet
-            self.rootCanvas.itemconfig(self.kierrosPisteet[valittuKierros][valittu], text=temp_pisteet)
+            self.rootCanvas.itemconfig(self.kierrosPisteet[int(valittuKierros)][int(valittu)], text=temp_pisteet)
             # print(pelaaja[valittu], valittuKierros)
 
     def hiiren_valinta(self, event):
@@ -466,6 +469,8 @@ class PisteenlaskijaUI(Frame):
                         temp_item = self.rootCanvas.create_text(x_temp, y_temp, text='',
                                                                 font=self.perusFontti, fill=fonttiVari)
                         self.kierrosPisteet[kierrosNumero].append(temp_item)
+                        if not pelaaja[item]['pisteet'][kierrosNumero-2]:
+                            self.rootCanvas.itemconfig(self.kierrosPisteet[kierrosNumero-1][item], text='0')
                         if item == jakaja:
                             pelaaja[item]['jakaja'] = True
                         else:
