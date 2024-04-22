@@ -58,3 +58,5 @@ kierros = ['Kirjoita pelaajien nimet', 'Kahdet kolmoset', 'Suora ja kolmoset', '
 kierrosLyhenne = ['2xK', 'S&K', '2xS', '3xK', 'S&2xK', '2xS&K', '3xS', '4xK']
 peliLoppuTekstit = ['Peli Loppu!', 'Voittajalle onnittelut', 'ja häviäjille parempaa onnea ensi kertaan',
                     'Aloita uusi peli painamalla \'Enter\'']
+
+fontti = 'Arial'

@@ -49,6 +49,9 @@ class AsetuksetIkkuna(Toplevel):
         self.entry = Entry(self)
         self.entry.pack()
 
+        Label(self, text='Tämä osio ei tee vielä mitään').pack()
+        Label(self, text='Olethan kärsivällinen, rakennamme kovaa kyytiä').pack()
+
 
 class OhjeIkkuna(Toplevel):
     def __init__(self, master):
@@ -70,7 +73,7 @@ class OhjeIkkuna(Toplevel):
             'Ensimmäinen pelaaja on oletuksena jakaja, jos sitä ei muuteta.',
             'Jakajan tunnistaa ympyröidystä J-kirjaimesta',
             ' ',
-            'Saat pelin säännöt näkyviin painamalla "F11"',
+            'Saat pelin säännöt näkyviin painamalla "F11" (in progress)',
             'Laita pelatun kierroksen pisteet ja siirry',
             'seuraavalle kierrokselle painamalla "Enter"',
             ' ',
@@ -122,7 +125,7 @@ class TallennusLatausIkkuna(Toplevel):
             label.grid(row=current_row+x, column=0, sticky='nsew')
             Button(self.frame, text='Lataa', command=functools.partial(self.lataa_peli, x)
                    ).grid(row=current_row+x, column=1, sticky='nsew')
-            Button(self.frame, text='tallenna', command=functools.partial(self.tallenna_peli, x, self)
+            Button(self.frame, text='tallenna', command=functools.partial(self.tallenna_peli, tiedosto=x)
                    ).grid(row=current_row+x, column=2, sticky='nsew')
             self.tallennusLabels.append(label)
 
@@ -131,100 +134,111 @@ class TallennusLatausIkkuna(Toplevel):
         self.L = Button(self.frame, text='lataa', command=functools.partial(self.lataa_peli, 'auto'))
         self.L.grid(row=current_row+4, column=1, sticky='nsew')
 
+        self.bind('<F4>', self.destroy_window)
+
+    def destroy_window(self, event):
+        self.destroy()
+
     def lataa_peli(self, tiedosto):
         global pelaaja, pelaajaMaara, kierrosNumero, valittuKierros, valintaSijaintiX, valintaSijaintiY, jakaja
         global sarakkeenLeveys, valittu
 
         # avataan tiedosto
         tiedosto_nimi=f'saves/save_{tiedosto}.json'
-        with open(tiedosto_nimi, 'r') as f:
-            haettu_data = load(f)
+        try:
+            with open(tiedosto_nimi, 'r') as f:
+                haettu_data = load(f)
 
-        # haetaan tiedot
-        pelaaja = haettu_data['pelaaja']
-        pelaajaMaara = haettu_data['pelaajaMaara']
-        kierrosNumero = haettu_data['kierrosNumero']
-        valittuKierros = haettu_data['valittuKierros']
-        valintaSijaintiX = haettu_data['valintaSijaintiX']
-        valintaSijaintiY = haettu_data['valintaSijaintiY']
-        jakaja = haettu_data['jakaja']
-        sarakkeenLeveys = haettu_data['sarakkeenLeveys']
-        valittu = haettu_data['valittu']
 
-        # suljetaan tiedosto
-        f.close()
+            # haetaan tiedot
+            pelaaja = haettu_data['pelaaja']
+            pelaajaMaara = haettu_data['pelaajaMaara']
+            kierrosNumero = haettu_data['kierrosNumero']
+            valittuKierros = haettu_data['valittuKierros']
+            valintaSijaintiX = haettu_data['valintaSijaintiX']
+            valintaSijaintiY = haettu_data['valintaSijaintiY']
+            jakaja = haettu_data['jakaja']
+            sarakkeenLeveys = haettu_data['sarakkeenLeveys']
+            valittu = haettu_data['valittu']
 
-        # nollataan näyttö ja muuttujat tarvittavalla tasolla
-        self.ui.rootCanvas.delete('all')
-        self.ui.kierrosLyhenneText = []
-        self.ui.pelaajaText = []
-        self.ui.pelaajaNimi = []
-        self.ui.kierrosPisteet = []
-        self.ui.kokoPisteTeksti = []
-        for i_temp in range(9):
-            self.ui.kierrosPisteet.append([])
+            # suljetaan tiedosto
+            f.close()
 
-        # luodaan näytön elementit uudestaan ladatun pelin tietojen pohjalta
-        self.ui.muokattu_tausta = self.ui.rootCanvas.create_image(0, 0, anchor='nw', image=self.ui.uusi_tausta)
-        self.ui.valintaViiva = self.ui.rootCanvas.create_line(valintaSijaintiX, valintaSijaintiY,
-                                                              valintaSijaintiX + sarakkeenLeveys, valintaSijaintiY,
-                                                              fill=fonttiVari, width=2)
+            # nollataan näyttö ja muuttujat tarvittavalla tasolla
+            self.ui.rootCanvas.delete('all')
+            self.ui.kierrosLyhenneText = []
+            self.ui.pelaajaText = []
+            self.ui.pelaajaNimi = []
+            self.ui.kierrosPisteet = []
+            self.ui.kokoPisteTeksti = []
+            for i_temp in range(9):
+                self.ui.kierrosPisteet.append([])
 
-        # tämä for -loop tekee kaikki pelaajakohtaiset tulostukset
-        x_temp = sijaintiXOletus + (sarakkeenLeveys/2)
-        for item in range(pelaajaMaara + 1):
-            temp_tx = self.ui.rootCanvas.create_text(vasenMarginaali + 30, 50, anchor='w', text=pelaaja[item]['nimi'],
-                                                       font=self.ui.perusFontti, fill=fonttiVari)
-            self.ui.pelaajaText.append(temp_tx)
+            # luodaan näytön elementit uudestaan ladatun pelin tietojen pohjalta
+            self.ui.muokattu_tausta = self.ui.rootCanvas.create_image(0, 0, anchor='nw', image=self.ui.uusi_tausta)
+            self.ui.valintaViiva = self.ui.rootCanvas.create_line(valintaSijaintiX, valintaSijaintiY,
+                                                                  valintaSijaintiX + sarakkeenLeveys, valintaSijaintiY,
+                                                                  fill=fonttiVari, width=2)
 
-            temp_tx = self.ui.rootCanvas.create_text(x_temp, valintaSijaintiY - fonttiKoko, text=pelaaja[item]['nimi'],
-                                                       font=self.ui.perusFontti, fill=fonttiVari)
-            self.ui.pelaajaNimi.append(temp_tx)
-            x_temp += sarakkeenLeveys
-            temp_tx = self.ui.rootCanvas.create_text(vasenKokoPisteNimiMarginaali, kokoPisteMarginaali,
-                                                     text=pelaaja[item]['kokonaisPisteet'], font=self.ui.perusFontti,
-                                                     fill=fonttiVari)
-            self.ui.kokoPisteTeksti.append(temp_tx)
-            for krs in range(1, kierrosNumero+1):
-                if krs < 9:
-                    if pelaaja[item]['pisteet'][krs-1] or krs == kierrosNumero:
-                        temp_pisteet = pelaaja[item]['pisteet'][krs-1]
-                    else:
-                        temp_pisteet = '0'
+            # tämä for -loop tekee kaikki pelaajakohtaiset tulostukset
+            x_temp = sijaintiXOletus + (sarakkeenLeveys/2)
+            for item in range(pelaajaMaara + 1):
+                temp_tx = self.ui.rootCanvas.create_text(vasenMarginaali + 30, 50, anchor='w', text=pelaaja[item]['nimi'],
+                                                           font=self.ui.perusFontti, fill=fonttiVari)
+                self.ui.pelaajaText.append(temp_tx)
 
-                    temp_tx = self.ui.rootCanvas.create_text(200, 500, text=temp_pisteet,
-                                                         font=self.ui.perusFontti, fill=fonttiVari)
-                    self.ui.kierrosPisteet[krs].append(temp_tx)
+                temp_tx = self.ui.rootCanvas.create_text(x_temp, valintaSijaintiY - fonttiKoko, text=pelaaja[item]['nimi'],
+                                                           font=self.ui.perusFontti, fill=fonttiVari)
+                self.ui.pelaajaNimi.append(temp_tx)
+                x_temp += sarakkeenLeveys
+                temp_tx = self.ui.rootCanvas.create_text(vasenKokoPisteNimiMarginaali, kokoPisteMarginaali,
+                                                         text=pelaaja[item]['kokonaisPisteet'], font=self.ui.perusFontti,
+                                                         fill=fonttiVari)
+                self.ui.kokoPisteTeksti.append(temp_tx)
+                for krs in range(1, kierrosNumero+1):
+                    if krs < 9:
+                        if pelaaja[item]['pisteet'][krs-1] or krs == kierrosNumero:
+                            temp_pisteet = pelaaja[item]['pisteet'][krs-1]
+                        else:
+                            temp_pisteet = '0'
 
-        # tämä for -loop tulostaa kierroslyhenteet
-        y_temp = ekaKierrosYLocation
-        for item in kierrosLyhenne:
-            temp_tx = self.ui.rootCanvas.create_text(10, y_temp, anchor='w', text=item,
-                                                  font=self.ui.perusFontti, fill=fonttiVari)
-            self.ui.kierrosLyhenneText.append(temp_tx)
-            y_temp += fonttiKokoIso
+                        temp_tx = self.ui.rootCanvas.create_text(200, 500, text=temp_pisteet,
+                                                             font=self.ui.perusFontti, fill=fonttiVari)
+                        self.ui.kierrosPisteet[krs].append(temp_tx)
 
-        # ja lopuksi kaikki kertaalleen tulostettavat
-        self.ui.kierrosNimiNyt = self.ui.rootCanvas.create_text(600, 600, text=kierros[kierrosNumero],
-                                                                font=self.ui.isoFontti, fill=fonttiVari)
-        self.ui.jakajanMerkki = self.ui.rootCanvas.create_text(10, kokoPisteMarginaali+fonttiKokoIso, text='Ⓙ',
-                                                               font=self.ui.J_Fontti, fill=fonttiVari)
-        self.ui.ohjeTeksti = self.ui.rootCanvas.create_text(600, 650, text='Ohjeet painamalla F1',
-                                                            font=self.ui.perusFontti, fill=fonttiVari)
-        self.ui.versioTeksti = self.ui.rootCanvas.create_text(versioTekstiX, versioTekstiY, text=versioNumero,
-                                                              font=self.ui.verFontti, fill=fonttiVari)
-        self.ui.text_Kokopiste = self.ui.rootCanvas.create_text(vasenMarginaali, kokoPisteMarginaali, anchor='w',
-                                                                text='Kokonaispisteet:', font=self.ui.perusFontti,
-                                                                fill=fonttiVari)
-        self.ui.virhe_teksti = self.ui.rootCanvas.create_text(virheenSijaintiX, virheenSijaintiY, text='',
-                                                              font=self.ui.isoFontti, fill='red')
+            # tämä for -loop tulostaa kierroslyhenteet
+            y_temp = ekaKierrosYLocation
+            for item in kierrosLyhenne:
+                temp_tx = self.ui.rootCanvas.create_text(10, y_temp, anchor='w', text=item,
+                                                      font=self.ui.perusFontti, fill=fonttiVari)
+                self.ui.kierrosLyhenneText.append(temp_tx)
+                y_temp += fonttiKokoIso
 
-        # kun kaikki elementit on luotu, varmistetaan pelaajien järjestys pisteiden_laskenta -funktiolla
-        # ja elementtien paikka scale_objects -funktiolla
-        self.ui.pisteiden_laskenta()
-        self.ui.scale_objects()
+            # ja lopuksi kaikki kertaalleen tulostettavat
+            self.ui.kierrosNimiNyt = self.ui.rootCanvas.create_text(600, 600, text=kierros[kierrosNumero],
+                                                                    font=self.ui.isoFontti, fill=fonttiVari)
+            self.ui.jakajanMerkki = self.ui.rootCanvas.create_text(10, kokoPisteMarginaali+fonttiKokoIso, text='Ⓙ',
+                                                                   font=self.ui.J_Fontti, fill=fonttiVari)
+            self.ui.ohjeTeksti = self.ui.rootCanvas.create_text(600, 650, text='Ohjeet painamalla F1',
+                                                                font=self.ui.perusFontti, fill=fonttiVari)
+            self.ui.versioTeksti = self.ui.rootCanvas.create_text(versioTekstiX, versioTekstiY, text=versioNumero,
+                                                                  font=self.ui.verFontti, fill=fonttiVari)
+            self.ui.text_Kokopiste = self.ui.rootCanvas.create_text(vasenMarginaali, kokoPisteMarginaali, anchor='w',
+                                                                    text='Kokonaispisteet:', font=self.ui.perusFontti,
+                                                                    fill=fonttiVari)
+            self.ui.virhe_teksti = self.ui.rootCanvas.create_text(virheenSijaintiX, virheenSijaintiY, text='',
+                                                                  font=self.ui.isoFontti, fill='red')
 
-    def tallenna_peli(tiedosto, self=None):
+            # kun kaikki elementit on luotu, varmistetaan pelaajien järjestys pisteiden_laskenta -funktiolla
+            # ja elementtien paikka scale_objects -funktiolla
+            self.ui.pisteiden_laskenta()
+            self.ui.scale_objects()
+            self.destroy()
+        except:
+            mb.showinfo('Virhe latauksessa','Tiedostoa ei löytynyt')
+            self.lift()
+
+    def tallenna_peli(self, tiedosto):
         Tallennettava_tiedosto = {
             'pelaaja': pelaaja,
             'pelaajaMaara': pelaajaMaara,
@@ -266,11 +280,11 @@ class PisteenlaskijaUI(Frame):
         self.settings_window = None
         self.manual_window = None
         self.lataa_tallenna = None
-        self.perusFontti = Font(family='Arial', size=fonttiKoko)
-        self.isoFontti = Font(family='Arial', size=fonttiKokoIso)
-        self.pieniFontti = Font(family='Arial', size=fonttiKokoPieni)
-        self.verFontti = Font(family='Arial', size=fonttiKokoVer)
-        self.J_Fontti = Font(family='Arial', size=fonttiKokoJ)
+        self.perusFontti = Font(family=fontti, size=fonttiKoko)
+        self.isoFontti = Font(family=fontti, size=fonttiKokoIso)
+        self.pieniFontti = Font(family=fontti, size=fonttiKokoPieni)
+        self.verFontti = Font(family=fontti, size=fonttiKokoVer)
+        self.J_Fontti = Font(family=fontti, size=fonttiKokoJ)
         self.kierrosLyhenneText = []  # Tämä on kierros teksti-objektien säilömiseen tarkoitettu array
         self.pelaajaText = []  # Tämä on kokonaispisteissä näkyvien pelaajien nimien teksti objetien säilömiseen
         self.pelaajaNimi = []  # Tämä on ylhäällä nimirivillä olevia teksti-objekteja varten
@@ -418,12 +432,18 @@ class PisteenlaskijaUI(Frame):
                     pelaaja[item]['jakaja'] = True
                 else:
                     pelaaja[item]['jakaja'] = False
+        elif kierrosNumero < 9:
+            valittuKierros = valittuKierros - 1
+            valintaSijaintiY = valintaSijaintiY - fonttiKokoIso
+            if valittuKierros < 1:
+                valittuKierros = kierrosNumero
+                valintaSijaintiY = sijaintiYOletus+(kierrosNumero*fonttiKokoIso)
         else:
             valittuKierros = valittuKierros - 1
             valintaSijaintiY = valintaSijaintiY - fonttiKokoIso
-            if valittuKierros < 0:
-                valittuKierros = kierrosNumero
-                valintaSijaintiY = sijaintiYOletus
+            if valittuKierros < 1:
+                valittuKierros = 8
+                valintaSijaintiY = sijaintiYOletus+(8*fonttiKokoIso)
 
     @staticmethod
     def liiku_alas():
@@ -437,12 +457,18 @@ class PisteenlaskijaUI(Frame):
                     pelaaja[item]['jakaja'] = True
                 else:
                     pelaaja[item]['jakaja'] = False
-        else:
+        elif kierrosNumero < 9:
             valittuKierros += 1
             valintaSijaintiY += fonttiKokoIso
             if valittuKierros > kierrosNumero:
-                valittuKierros = 0
-                valintaSijaintiY = sijaintiYOletus
+                valittuKierros = 1
+                valintaSijaintiY = sijaintiYOletus+fonttiKokoIso
+        else:
+            valittuKierros += 1
+            valintaSijaintiY += fonttiKokoIso
+            if valittuKierros > 8:
+                valittuKierros = 1
+                valintaSijaintiY = sijaintiYOletus+fonttiKokoIso
 
     def edit_pelaaja_nimi(self, kirjain):
         global pelaaja, valittuKierros, valittu
@@ -473,6 +499,8 @@ class PisteenlaskijaUI(Frame):
 
             pelaaja[valittu]['pisteet'][valittuKierros - 1] = temp_pisteet
             self.rootCanvas.itemconfig(self.kierrosPisteet[int(valittuKierros)][int(valittu)], text=temp_pisteet)
+            if valittuKierros < kierrosNumero:
+                self.pisteiden_laskenta()
             # print(pelaaja[valittu], valittuKierros)
 
     def hiiren_valinta(self, event):
@@ -513,8 +541,11 @@ class PisteenlaskijaUI(Frame):
             temp_y = koko_piste_marginaali_scaled + fontti_koko_iso_scaled
             for int in range(pelaajaMaara+1):
                 if hiiri_y < temp_y:
+                    pelaajan_nimi = self.rootCanvas.itemcget(self.pelaajaText[int], 'text')
+                    for item in range(len(pelaaja)):
+                        if pelaaja[item]['nimi'] == pelaajan_nimi:
+                            jakaja = item
                     print('olet jakaja paikalla ' + str(int))
-                    jakaja = int
                     for item in range(len(pelaaja)):
                         if item == jakaja:
                             pelaaja[item]['jakaja'] = True
@@ -569,7 +600,8 @@ class PisteenlaskijaUI(Frame):
 
             elif kierrosNumero < 9:
                 kierrosNumero += 1
-                if kierrosNumero < 8:
+                if kierrosNumero < 9:
+                    print(self.kierrosPisteet)
                     valintaSijaintiY = fonttiKokoIso * kierrosNumero + sijaintiYOletus
                     valittuKierros = kierrosNumero
                     x_temp = sijaintiXOletus + (sarakkeenLeveys / 2)
@@ -588,8 +620,12 @@ class PisteenlaskijaUI(Frame):
                         else:
                             pelaaja[item]['jakaja'] = False
                         x_temp += sarakkeenLeveys
+                elif kierrosNumero == 9:
+                    for item in range(len(pelaaja)):
+                        if not pelaaja[item]['pisteet'][kierrosNumero-2]:
+                            self.rootCanvas.itemconfig(self.kierrosPisteet[kierrosNumero-1][item], text='0')
                 self.pisteiden_laskenta()
-                TallennusLatausIkkuna.tallenna_peli('auto')
+                TallennusLatausIkkuna.tallenna_peli(None, 'auto')
             else:
                 self.uusi_peli()
     def jarjesta_pelaajat(self):
@@ -608,14 +644,15 @@ class PisteenlaskijaUI(Frame):
 
         for item in pelaaja:
             koko_piste = 0
-            for item2 in item['pisteet']:
-                if item2:
-                    koko_piste += int(item2)
+            for item2 in range(kierrosNumero-1):
+                if item['pisteet'][item2]:
+                    koko_piste += int(item['pisteet'][item2])
             item['kokonaisPisteet'] = koko_piste
         self.jarjesta_pelaajat()
 
     def uusi_peli(self):
         print('tähän tulisi uuden pelin koodi')
+        print('Kyllä tykkään, selkeä ja helppolukuinen sekä hyvin kommentoitu :) T:Cave')
         return
 
     @staticmethod
@@ -668,13 +705,13 @@ class PisteenlaskijaUI(Frame):
                     if piste == '':
                         piste = 0
                     if int(piste) > 200 or int(piste) == 1:
-                        virhe = 1
+                        virhe = 2
 
     def virheen_tulostus(self, virhe_numero):
 
         valinnat = {
-            1: 'Tarkista Pisteet',
-            2: 'Tarkista Pisteet',
+            1: 'Et ole syöttänyt kaikille pisteitä',
+            2: 'Tarkista pisteet',
             3: 'Pelaajia on liian vähän',
             4: 'Nimet ovat samanlaiset'
         }
@@ -723,11 +760,11 @@ class PisteenlaskijaUI(Frame):
         fontti_koko_j_scaled = ikkuna_korkeus_scaled * (fonttiKokoJ/ikkunaYScale)
 
         # Update font -objects to correct size:
-        self.perusFontti = Font(family='Arial', size=int(fontti_koko_scaled))
-        self.isoFontti = Font(family='Arial', size=int(fontti_koko_iso_scaled))
-        self.pieniFontti = Font(family='Arial', size=int(fontti_koko_pieni_scaled))
-        self.verFontti = Font(family='Arial', size=int(fontti_koko_ver_scaled))
-        self.J_Fontti = Font(family='Arial', size=int(fontti_koko_j_scaled))
+        self.perusFontti = Font(family=fontti, size=int(fontti_koko_scaled))
+        self.isoFontti = Font(family=fontti, size=int(fontti_koko_iso_scaled))
+        self.pieniFontti = Font(family=fontti, size=int(fontti_koko_pieni_scaled))
+        self.verFontti = Font(family=fontti, size=int(fontti_koko_ver_scaled))
+        self.J_Fontti = Font(family=fontti, size=int(fontti_koko_j_scaled))
 
         # update texts based of the updated variables above
         y_temp = eka_kierros_y_location_scaled
