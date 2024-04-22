@@ -14,7 +14,7 @@ laatikonLeveys = 200
 syotto = False
 
 
-fonttiKoko = 36
+fonttiKoko = 34
 fonttiKokoIso = 57
 fonttiKokoPieni = 24
 fonttiKokoVer = 18
@@ -40,6 +40,7 @@ ohjeTekstiX = 1250
 ohjeTekstiY = 750
 versioTekstiX = 1800
 versioTekstiY = 1050
+fontti = 'Special Elite'
 
 sarakkeenLeveys = (ikkunaXScale - sijaintiXOletus) / (pelaajaMaara + 1)
 
@@ -59,4 +60,4 @@ kierrosLyhenne = ['2xK', 'S&K', '2xS', '3xK', 'S&2xK', '2xS&K', '3xS', '4xK']
 peliLoppuTekstit = ['Peli Loppu!', 'Voittajalle onnittelut', 'ja häviäjille parempaa onnea ensi kertaan',
                     'Aloita uusi peli painamalla \'Enter\'']
 
-fontti = 'Arial'
+# fontti = 'Arial'

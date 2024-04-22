@@ -3,10 +3,12 @@ import tkinter.simpledialog
 from tkinter import *
 from PIL import ImageTk, Image
 from globals import *
-from tkinter.font import Font
+#from tkinter.font import Font
 from tkinter import messagebox as mb
 from json import *
 import os
+# import pyglet
+from tkextrafont import Font
 
 '''
 To-Do List:
@@ -20,6 +22,7 @@ To-Do List:
 
 pelaajaMaara = 5
 versioNumero = 'Versio 3.0-beta'
+# pyglet.font.add_file('media/SpecialElite-Regular.ttf')
 
 def tallennus_nimet():
 
@@ -280,7 +283,7 @@ class PisteenlaskijaUI(Frame):
         self.settings_window = None
         self.manual_window = None
         self.lataa_tallenna = None
-        self.perusFontti = Font(family=fontti, size=fonttiKoko)
+        self.perusFontti = Font(file='media/SpecialElite-Regular.ttf', family=fontti, size=fonttiKoko)
         self.isoFontti = Font(family=fontti, size=fonttiKokoIso)
         self.pieniFontti = Font(family=fontti, size=fonttiKokoPieni)
         self.verFontti = Font(family=fontti, size=fonttiKokoVer)
@@ -479,7 +482,7 @@ class PisteenlaskijaUI(Frame):
             else:
                 temp_nimi = pelaaja[valittu]['nimi'] + kirjain
                 #print(len(temp_nimi))
-                if len(temp_nimi) > 13:
+                if len(temp_nimi) > 12:
                     temp_nimi = temp_nimi[:-1]
 
             pelaaja[valittu]['nimi'] = temp_nimi
@@ -651,9 +654,85 @@ class PisteenlaskijaUI(Frame):
         self.jarjesta_pelaajat()
 
     def uusi_peli(self):
+        global pelaajaMaara, pelaaja, kierrosNumero, valittuKierros, valintaSijaintiY, valintaSijaintiX
+        global jakaja, sarakkeenLeveys, valittu
         print('tähän tulisi uuden pelin koodi')
         print('Kyllä tykkään, selkeä ja helppolukuinen sekä hyvin kommentoitu :) T:Cave')
-        return
+
+        pelaajaMaara = 5
+        kierrosNumero = 0
+        valittuKierros = 0
+        valintaSijaintiX = sijaintiXOletus
+        valintaSijaintiY = sijaintiYOletus
+        sarakkeenLeveys = (ikkunaXScale - sijaintiXOletus) / (pelaajaMaara + 1)
+        valittu = 0
+        jakaja = 0
+
+        pelaaja_nimet_temp = [item['nimi'] for item in pelaaja]
+        for item in range(4):
+            pelaaja_nimet_temp.append('')
+        pelaaja = []
+        for player in range(pelaajaMaara+1):
+            if pelaaja_nimet_temp[player]:
+                if player == 0:
+                    temp_pelaaja = {'nimi': pelaaja_nimet_temp[player], 'pisteet': ['', '', '', '', '', '', '', ''],
+                                    'jakaja': True}
+                else:
+                    temp_pelaaja = {'nimi': pelaaja_nimet_temp[player], 'pisteet': ['', '', '', '', '', '', '', ''],
+                                    'jakaja': False}
+            else:
+                if player == 0:
+                    temp_pelaaja = {'nimi': pelaaja_nimet_temp[player], 'pisteet': ['', '', '', '', '', '', '', ''],
+                                    'jakaja': True}
+                else:
+                    temp_pelaaja = {'nimi': pelaaja_nimet_temp[player], 'pisteet': ['', '', '', '', '', '', '', ''],
+                                    'jakaja': False}
+            pelaaja.append(temp_pelaaja)
+        self.rootCanvas.delete('all')
+        self.pelaajaText = []
+        self.pelaajaNimi = []
+        self.kierrosLyhenneText = []
+        self.kierrosPisteet = []
+        self.kokoPisteTeksti = []
+        for i_temp in range(9):
+            self.kierrosPisteet.append([])
+
+        self.muokattu_tausta = self.rootCanvas.create_image(0, 0, anchor='nw', image=self.uusi_tausta)
+        self.valintaViiva = self.rootCanvas.create_line(valintaSijaintiX, valintaSijaintiY,
+                                                                  valintaSijaintiX + sarakkeenLeveys, valintaSijaintiY,
+                                                                  fill=fonttiVari, width=2)
+        for item in range(pelaajaMaara + 1):
+            temp_text = self.rootCanvas.create_text(vasenMarginaali + 30, 50, anchor="w", text=pelaaja[item]['nimi'],
+                                                    font=self.perusFontti, fill=fonttiVari)
+            self.pelaajaText.append(temp_text)
+
+        x_temp = valintaSijaintiX + (sarakkeenLeveys / 2)
+        for item in range(pelaajaMaara + 1):
+            temp_text = self.rootCanvas.create_text(x_temp, valintaSijaintiY - fonttiKoko, text=pelaaja[item]['nimi'],
+                                                    font=self.perusFontti, fill=fonttiVari)
+            x_temp += sarakkeenLeveys
+            self.pelaajaNimi.append(temp_text)
+
+        y_temp = ekaKierrosYLocation
+        for it in kierrosLyhenne:
+            text = self.rootCanvas.create_text(10, y_temp, anchor="w", text=it, font=self.perusFontti, fill=fonttiVari)
+            self.kierrosLyhenneText.append(text)
+            y_temp += fonttiKokoIso
+
+        self.kierrosNimiNyt = self.rootCanvas.create_text(600, 600, text=kierros[0],
+                                                          font=self.isoFontti, fill=fonttiVari)
+        self.jakajanMerkki = self.rootCanvas.create_text(10, kokoPisteMarginaali + fonttiKokoIso, text='Ⓙ',
+                                                         font=self.J_Fontti, fill=fonttiVari)
+        self.ohjeTeksti = self.rootCanvas.create_text(600, 650, text='Ohjeet painamalla F1',
+                                                      font=self.perusFontti, fill=fonttiVari)
+        self.versioTeksti = self.rootCanvas.create_text(versioTekstiX, versioTekstiY, text=versioNumero,
+                                                        font=self.verFontti, fill=fonttiVari)
+        self.text_Kokopiste = self.rootCanvas.create_text(vasenMarginaali, kokoPisteMarginaali,
+                                                          anchor="w", text="Kokonaispisteet:", font=self.perusFontti,
+                                                          fill=fonttiVari)
+        self.virhe_teksti = self.rootCanvas.create_text(500, 400, text='', font=self.isoFontti, fill='red')
+
+        self.scale_objects()
 
     @staticmethod
     def virheen_tarkistus():
