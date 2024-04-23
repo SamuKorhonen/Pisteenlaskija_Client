@@ -22,6 +22,7 @@ To-Do List:
 
 pelaajaMaara = 5
 versioNumero = 'Versio 3.0-beta'
+#tkextrafont.TkExtraFont.chdir = resource_path()
 
 
 # pyglet.font.add_file('media/SpecialElite-Regular.ttf')
@@ -37,6 +38,11 @@ def tallennus_nimet():
         else:
             tallennusNimi.append('')
     # print(tallennusNimi)
+
+# def resource_path(relative_path):
+#    """ Get absolute path to resource, works for dev and for PyInstaller """
+#    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+#    return os.path.join(base_path, relative_path)
 
 
 class AsetuksetIkkuna(Toplevel):
@@ -257,12 +263,14 @@ class TallennusLatausIkkuna(Toplevel):
             'valittu': valittu
         }
 
-        if tiedosto is not 'auto':
+        if tiedosto != 'auto':
             tallennuksen_nimi = tkinter.simpledialog.askstring('tallennuksen nimi', 'Anna tallennukselle nimi:')
             if tallennuksen_nimi:
                 Tallennettava_tiedosto['tallennuksen_nimi'] = tallennuksen_nimi
+                tallennusNimi[tiedosto] = tallennuksen_nimi
             else:
                 Tallennettava_tiedosto['tallennuksen_nimi'] = ''
+                tallennusNimi[tiedosto] = f'Nimetön {tiedosto}'
         else:
             Tallennettava_tiedosto['tallennuksen_nimi'] = 'autotallennus'
 
@@ -270,6 +278,7 @@ class TallennusLatausIkkuna(Toplevel):
         with open(tiedosto_nimi, 'w') as f:
             dump(Tallennettava_tiedosto, f)
         f.close()
+
 
         if self is not None:
             mb.showinfo('Tallennus onnistui', 'tiedosto tallennettu onnistuneesti')
@@ -286,6 +295,7 @@ class PisteenlaskijaUI(Frame):
         self.settings_window = None
         self.manual_window = None
         self.lataa_tallenna = None
+        # print(fonttikansio)
         self.perusFontti = Font(file='media/SpecialElite-Regular.ttf', family=fontti, size=fonttiKoko)
         self.isoFontti = Font(family=fontti, size=fonttiKokoIso)
         self.pieniFontti = Font(family=fontti, size=fonttiKokoPieni)
