@@ -1,4 +1,4 @@
-pelaajaMaara = 5
+pelaajaMaara = 6
 jakajanSijainti = 600
 jakaja = 0
 pisteMaara = 0
@@ -15,7 +15,8 @@ syotto = False
 
 
 fonttiKoko = 34
-fonttiKokoIso = 57
+fonttiKokoIso = 70
+fonttiKokoVirhe = 45
 fonttiKokoPieni = 24
 fonttiKokoVer = 18
 fonttiKokoJ = 14
@@ -25,7 +26,7 @@ vasenMarginaali = 10
 vasenKokoPisteNimiMarginaali = 40
 vasenKokoPisteMarginaali = 400
 ylaMarginaali = 50
-kokoPisteMarginaali = 638
+kokoPisteMarginaali = 650
 sijaintiXOletus = 170
 sijaintiYOletus = 96
 kierrosMaara = 8
@@ -33,7 +34,7 @@ tallennuspaikat = 3
 tallennusNimi = []
 fonttiVari = '#383eB8'
 virheenSijaintiX = 1250
-virheenSijaintiY = 900
+virheenSijaintiY = 928
 kierrosNimiX = 1250
 kierrosNimiY = 675
 ohjeTekstiX = 1250
@@ -41,6 +42,7 @@ ohjeTekstiY = 750
 versioTekstiX = 1800
 versioTekstiY = 1050
 fontti = 'Special Elite'
+rivivali = 57
 
 sarakkeenLeveys = (ikkunaXScale - sijaintiXOletus) / (pelaajaMaara + 1)
 
@@ -49,7 +51,7 @@ valintaSijaintiX = sijaintiXOletus
 
 ikkuna_leveys = 1280
 ikkuna_korkeus = 720
-ekaKierrosYLocation = 123
+ekaKierrosYLocation = 118
 
 
 kierros = ['Kirjoita pelaajien nimet', 'Kahdet kolmoset', 'Suora ja kolmoset', 'Kaksi suoraa',
