@@ -282,6 +282,7 @@ class TallennusLatausIkkuna(Toplevel):
         if self is not None:
             mb.showinfo('Tallennus onnistui', 'tiedosto tallennettu onnistuneesti')
             self.tallennusLabels[tiedosto].config(text=tallennuksen_nimi)
+            self.destroy()
 
 
 class PisteenlaskijaUI(Frame):
