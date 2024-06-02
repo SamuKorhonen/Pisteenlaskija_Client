@@ -45,12 +45,14 @@ def tallennus_nimet() -> None:
 
 
 def lue_asetukset() -> dict:
-    asetus_local: dict = {'fonttiVari': gl.fonttiVari, 'fonttiKoko': 100, 'datanLahetys': True}
+    asetus_local: dict = {'fonttiVari': gl.fonttiVari, 'fonttiKoko': 100,
+                          'datanLahetys': True, 'palvelinOsoite': 'localhost'}
     with open('media/settings.json') as tiedosto:
         asetukset_tiedosto = load(tiedosto)
     asetus_local['fonttiVari'] = asetukset_tiedosto['fonttiVari']
     asetus_local['fonttiKoko'] = asetukset_tiedosto['fonttiKoko']
     asetus_local['datanLahetys'] = asetukset_tiedosto['datanLahetys']
+    asetus_local['palvelinOsoite'] = asetukset_tiedosto['palvelinOsoite']
     return asetus_local
 
 
@@ -80,11 +82,16 @@ class AsetuksetIkkuna(tk.Toplevel):
         self.label_setting_datanlahetys.grid(row=2, column=0)
         self.checkbox_setting_datanlahetys = tk.Checkbutton(self.frame_grid,
                                                             variable=self.checkbox_setting_datanlahetys_var)
+        self.label_setting_palvelinosoite = tk.Label(self.frame_grid, text="Palvelimen Osoite")
+        self.label_setting_palvelinosoite.grid(row=3, column=0)
+        self.entry_setting_palvelinosoite = tk.Entry(self.frame_grid)
+        self.entry_setting_palvelinosoite.insert(0, asetus['palvelinOsoite'])
+        self.entry_setting_palvelinosoite.grid(row=3, column=1)
         self.checkbox_setting_datanlahetys_var.set(asetus['datanLahetys'])
         self.checkbox_setting_datanlahetys.grid(row=2, column=1)
 
         self.save_button = tk.Button(self.frame_grid, text='Tallenna', command=self.tallenna_asetukset)
-        self.save_button.grid(row=3, column=1)
+        self.save_button.grid(row=4, column=1)
 
         # tk.Label(self.frame_labels, text='Tämä osio ei tee vielä mitään').pack()
         # tk.Label(self.frame_labels, text='Olethan kärsivällinen, rakennamme kovaa kyytiä').pack()
@@ -105,6 +112,8 @@ class AsetuksetIkkuna(tk.Toplevel):
 
         asetus['fonttiKoko'] = local_asetus['fonttiKoko'] = local_fontti_koko
         asetus['datanLahetys'] = local_asetus['datanLahetys'] = self.checkbox_setting_datanlahetys_var.get()
+        asetus['palvelinOsoite'] = local_asetus['palvelinOsoite'] = (self.entry_setting_palvelinosoite.get()
+                                                                     or 'localhost')
 
         with open('media/settings.json', 'w') as f:
             dump(local_asetus, f)
@@ -831,7 +840,7 @@ class PisteenlaskijaUI(tk.Frame):
                 'name': game_id
             }
             api_key: str = 'pisteenlaskija2024versio3'
-            server_url: str = 'http://192.168.1.100:5000/api/data'
+            server_url: str = f'http://{asetus['palvelinOsoite']}/api/data'
             lahetettava_tiedosto_json = dumps(lahetettava_tiedosto)
             try:
                 response = requests.post(server_url, data=lahetettava_tiedosto_json, headers={
