@@ -866,7 +866,7 @@ class PisteenlaskijaUI(tk.Frame):
                     'Players': lahetettava_pelaaja
                 }
 
-                tiedosto_nimi = f'saves/{game_id}.json'
+                tiedosto_nimi = f'statistic/{game_id}.json'
                 with open(tiedosto_nimi, 'w') as file:
                     dump(tallennettava_tiedosto, file)
                 file.close()
