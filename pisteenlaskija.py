@@ -1,5 +1,6 @@
 import datetime
 import functools
+import logging
 import tkinter.simpledialog
 import tkinter as tk
 from PIL import ImageTk, Image
@@ -25,7 +26,8 @@ TODO List:
 '''
 
 # pelaajaMaara = 6
-versioNumero = 'Versio 3.0-beta'
+versioNumero = 'Versio 3.0'
+api_key = 'pisteenlaskija2024versio3'
 
 
 # tkextrafont.TkExtraFont.chdir = resource_path()
@@ -48,13 +50,14 @@ def tallennus_nimet() -> None:
 
 def lue_asetukset() -> dict:
     asetus_local: dict = {'fonttiVari': gl.fonttiVari, 'fonttiKoko': 100,
-                          'datanLahetys': True, 'palvelinOsoite': 'localhost'}
+                          'datanLahetys': True, 'palvelinOsoite': 'localhost', 'api': "pisteenlaskija2024versio3"}
     with open('media/settings.json') as tiedosto:
         asetukset_tiedosto = load(tiedosto)
     asetus_local['fonttiVari'] = asetukset_tiedosto['fonttiVari']
     asetus_local['fonttiKoko'] = asetukset_tiedosto['fonttiKoko']
     asetus_local['datanLahetys'] = asetukset_tiedosto['datanLahetys']
     asetus_local['palvelinOsoite'] = asetukset_tiedosto['palvelinOsoite']
+    asetus_local['api'] = asetukset_tiedosto['api']
     return asetus_local
 
 
@@ -849,45 +852,61 @@ class PisteenlaskijaUI(tk.Frame):
 
     def laheta_pisteet_palvelimelle(self) -> None:
         if asetus['datanLahetys']:
+            global api_key
             print('olet lähettämässä pisteitä palvelimelle')
 
-            game_id = self.create_gameid()
-            self.pisteiden_laskenta()
-            try:
-                lahetettava_pelaaja: list[str: int] = []
-                for player in pelaaja:
-                    player_temp = {'Name': player['nimi'],
-                                   'Points': {str(i): int(j) for i, j in enumerate(player['pisteet'], 1)}}
-                    player_temp['Points']['Total'] = int(player['kokonaisPisteet'])
-                    lahetettava_pelaaja.append(player_temp)
+            if api_key == "pisteenlaskija2024versio3" or not api_key:
 
-                tallennettava_tiedosto: object = {
-                    'client_version': versioNumero,
-                    'Players': lahetettava_pelaaja
-                }
+                server_url: str = f'http://{asetus['palvelinOsoite']}/api/api'
+                print("Api kysely")
+                print(f'Vanha Api avain: {api_key}')
 
-                tiedosto_nimi = f'statistic/{game_id}.json'
-                with open(tiedosto_nimi, 'w') as file:
-                    dump(tallennettava_tiedosto, file)
-                file.close()
+                try:
+                    response = requests.post(server_url, headers={'versio': versioNumero, 'X-API-KEY': api_key},
+                                             timeout=10)
+                    api_key = response.text
+                    print(f'Uusi Api avain: {api_key}')
+                except Exception as e:
+                    print(e)
 
-                lahetettava_tiedosto = {
-                    'data': tallennettava_tiedosto,
-                    'name': game_id
-                }
-                api_key: str = 'pisteenlaskija2024versio3'
-                server_url: str = f'http://{asetus['palvelinOsoite']}/api/data'
-                lahetettava_tiedosto_json = dumps(lahetettava_tiedosto)
-            except Exception as e:
-                mb.showinfo(title='Jotain meni vikaan', message=f'tiedoston muodostuksessa ilmeni virhe {e}')
-            try:
-                response = requests.post(server_url, data=lahetettava_tiedosto_json, headers={
-                    'Content-Type': 'application/json', 'X-API-KEY': api_key})
-                os.remove(tiedosto_nimi) if response.status_code == 200 else None
-                print("pisteet lähetetty")
-            except Exception as e:
-                print(e)
-                mb.showinfo('Virhe palvelinyhteydessä', f'Palvelin yhteydessä ilmaantui virhe {e}')
+
+            if api_key != "pisteenlaskija2024versio3" or "" or None:
+                game_id = self.create_gameid()
+                self.pisteiden_laskenta()
+                try:
+                    lahetettava_pelaaja: list[str: int] = []
+                    for player in pelaaja:
+                        player_temp = {'Name': player['nimi'],
+                                       'Points': {str(i): int(j) for i, j in enumerate(player['pisteet'], 1)}}
+                        player_temp['Points']['Total'] = int(player['kokonaisPisteet'])
+                        lahetettava_pelaaja.append(player_temp)
+
+                    tallennettava_tiedosto: object = {
+                        'client_version': versioNumero,
+                        'Players': lahetettava_pelaaja
+                    }
+
+                    tiedosto_nimi = f'statistic/{game_id}.json'
+                    with open(tiedosto_nimi, 'w') as file:
+                        dump(tallennettava_tiedosto, file)
+                    file.close()
+
+                    lahetettava_tiedosto = {
+                        'data': tallennettava_tiedosto,
+                        'name': game_id
+                    }
+                    server_url: str = f'http://{asetus['palvelinOsoite']}/api/data'
+                    lahetettava_tiedosto_json = dumps(lahetettava_tiedosto)
+                except Exception as e:
+                    mb.showinfo(title='Jotain meni vikaan', message=f'tiedoston muodostuksessa ilmeni virhe {e}')
+                try:
+                    response = requests.post(server_url, data=lahetettava_tiedosto_json, headers={
+                        'Content-Type': 'application/json', 'X-API-KEY': api_key})
+                    os.remove(tiedosto_nimi) if response.status_code == 200 else None
+                    print("pisteet lähetetty")
+                except Exception as e:
+                    print(e)
+                    mb.showinfo('Virhe palvelinyhteydessä', f'Palvelin yhteydessä ilmaantui virhe {e}')
 
     @staticmethod
     def create_gameid() -> str:
