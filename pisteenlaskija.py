@@ -16,16 +16,12 @@ import threading
 
 '''
 TODO List:
-- Asetukset
-- Serveri yhteys
 - Turnaus versio muokkaukset
-- Virhe ilmoitukset ja tunnistukset esim pisteistä
-    - yhteydessä palvelimeen virhe (tehdään vasta, kun päästään serveriyhteyden koodaukseen)
     
 '''
 
 # pelaajaMaara = 6
-versioNumero = 'Versio 3.0-beta'
+versioNumero = 'Versio 3.0'
 
 
 # tkextrafont.TkExtraFont.chdir = resource_path()
@@ -128,11 +124,11 @@ class AsetuksetIkkuna(tk.Toplevel):
                         'tai hexa koodilla (esim. "#383eB8")')
 
         try:
-            local_fontti_koko: int = min(max(int(self.variables['fonttiKoko'].get()), 10), 200)
+            local_fontti_koko: int = min(max(int(self.variables['fonttiKoko'].get()), 40), 200)
         except ValueError:
             local_fontti_koko: int = 100
             mb.showerror("Virhe fontti koon asettamisessa",
-                         "Fontti koon täytyy olla välillä 10 - 200 ja "
+                         "Fontti koon täytyy olla välillä 40 - 200 ja "
                          "sen täytyy olla numero arvo.\nNumeroarvo tarkoittaa, "
                          "kuinka isoja fontit ovat suhteessa oletusarvoon, "
                          "eli 100. Näin ollen esimrekiksi fontti koko 50 "
@@ -327,6 +323,9 @@ class TallennusLatausIkkuna(tk.Toplevel):
                                                                     font=self.ui.perusFontti, fill=asetus['fonttiVari'])
             self.ui.virhe_teksti = self.ui.rootCanvas.create_text(gl.virheenSijaintiX, gl.virheenSijaintiY, text='',
                                                                   font=self.ui.isoFontti, fill='red')
+            self.ui.pisteiden_lahetys_teksti = self.ui.rootCanvas.create_text(800, gl.versioTekstiY, text='',
+                                                                              font=self.ui.verFontti,
+                                                                              fill='green')
 
             # kun kaikki elementit on luotu, varmistetaan pelaajien järjestys pisteiden_laskenta -funktiolla
             # ja elementtien paikka scale_objects -funktiolla
@@ -447,6 +446,9 @@ class PisteenlaskijaUI(tk.Frame):
                                                                font=self.perusFontti,
                                                                fill=asetus['fonttiVari'])
         self.virhe_teksti: int = self.rootCanvas.create_text(500, 400, text='', font=self.virheFontti, fill='red')
+        self.pisteiden_lahetys_teksti: int = self.rootCanvas.create_text(800, gl.versioTekstiY, text='',
+                                                                         font=self.verFontti,
+                                                                         fill='green')
 
         # Varmistetaan onko jotain näppäintä painettu
         # ja jos on mennään "painettu" -funktiossa varmistamaan mitä sitten tehdään
@@ -612,8 +614,7 @@ class PisteenlaskijaUI(tk.Frame):
             self.rootCanvas.itemconfig(self.kierrosPisteet[int(gl.valittuKierros)][int(gl.valittu)], text=temp_pisteet)
             self.pisteiden_laskenta() if gl.valittuKierros < gl.kierrosNumero else None
             if gl.kierrosNumero == 9:
-                pisteiden_lahetys_thread2 = threading.Thread(self.laheta_pisteet_palvelimelle())
-                pisteiden_lahetys_thread2.start()
+                self.laheta_pisteet_taustalla()
 
     def hiiren_valinta(self, event: tk.Event) -> None:
         # global valittu, valittuKierros, valintaSijaintiY, valintaSijaintiX, jakaja, pelaaja
@@ -729,8 +730,7 @@ class PisteenlaskijaUI(tk.Frame):
                 for item_number, item in enumerate(pelaaja):
                     if not item['pisteet'][gl.kierrosNumero - 2]:
                         self.rootCanvas.itemconfig(self.kierrosPisteet[gl.kierrosNumero - 1][item_number], text='0')
-                pisteiden_lahetys = threading.Thread(self.laheta_pisteet_palvelimelle())
-                pisteiden_lahetys.start()
+                self.laheta_pisteet_taustalla()
                 # print("lahetyksen tila: " + str(pisteiden_lahetys.is_alive()))
                 # pisteiden_lahetys.join()
             self.pisteiden_laskenta()
@@ -766,7 +766,7 @@ class PisteenlaskijaUI(tk.Frame):
     def uusi_peli(self) -> None:
         # global pelaajaMaara, pelaaja, kierrosNumero, valittuKierros, valintaSijaintiY, valintaSijaintiX
         # global jakaja, sarakkeenLeveys, valittu
-        global pelaaja
+        global pelaaja, pisteiden_lahetys_teksti_nakyvissa
         print('tähän tulisi uuden pelin koodi')
         print('Kyllä tykkään, selkeä ja helppolukuinen sekä hyvin kommentoitu :) T:Cave')
 
@@ -844,10 +844,33 @@ class PisteenlaskijaUI(tk.Frame):
                                                           anchor="w", text="Kokonaispisteet:", font=self.perusFontti,
                                                           fill=asetus['fonttiVari'])
         self.virhe_teksti = self.rootCanvas.create_text(500, 400, text='', font=self.isoFontti, fill='red')
+        self.pisteiden_lahetys_teksti: int = self.rootCanvas.create_text(800, gl.versioTekstiY, text='',
+                                                                         font=self.verFontti,
+                                                                         fill='green')
+        if pisteiden_lahetys_teksti_nakyvissa:
+            self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti, text='Lähetetään pisteitä')
 
         self.scale_objects()
 
+    def laheta_pisteet_taustalla(self) -> None:
+        global pisteiden_lahetys_teksti_nakyvissa
+        if asetus['datanLahetys']:
+            self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti, text='Lähetetään pisteitä')
+            pisteiden_lahetys_teksti_nakyvissa = True
+            self.scale_objects()
+            pisteiden_lahetys = threading.Thread(target=self.laheta_pisteet_palvelimelle)
+            pisteiden_lahetys.start()
+
+        # self.master.after(0, self.remove_pisteiden_lahetys_teksti)
+        # if pisteiden_lahetys.is_alive():
+        #    pisteiden_lahetys_on_aktiivinen = True
+        #    self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti, text='Lähetetään pisteitä')
+        # else:
+        #    pisteiden_lahetys_on_aktiivinen = False
+        #    self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti, text='')
+
     def laheta_pisteet_palvelimelle(self) -> None:
+        global pisteiden_lahetys_teksti_nakyvissa
         if asetus['datanLahetys']:
             print('olet lähettämässä pisteitä palvelimelle')
 
@@ -880,14 +903,49 @@ class PisteenlaskijaUI(tk.Frame):
                 lahetettava_tiedosto_json = dumps(lahetettava_tiedosto)
             except Exception as e:
                 mb.showinfo(title='Jotain meni vikaan', message=f'tiedoston muodostuksessa ilmeni virhe {e}')
+                return
             try:
                 response = requests.post(server_url, data=lahetettava_tiedosto_json, headers={
                     'Content-Type': 'application/json', 'X-API-KEY': api_key})
-                os.remove(tiedosto_nimi) if response.status_code == 200 else None
-                print("pisteet lähetetty")
+                if response.status_code == 200:
+                    os.remove(tiedosto_nimi)
+                    print("pisteet lähetetty")
+                    self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti, text='')
+                else:
+                    print(response.status_code)
+                    self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti,
+                                               text=f'palvelin yhteydessä virhe {response.status_code}')
+
+                self.scale_objects()
             except Exception as e:
                 print(e)
                 mb.showinfo('Virhe palvelinyhteydessä', f'Palvelin yhteydessä ilmaantui virhe {e}')
+            for file in os.listdir('statistic'):
+                print(file)
+                lahetys = self.laheta_odottavat_pisteet(file)
+                if lahetys != '200':
+                    print(lahetys)
+        pisteiden_lahetys_teksti_nakyvissa = False
+
+    @staticmethod
+    def laheta_odottavat_pisteet(tiedosto) -> str:
+
+        with open(f'statistic/{tiedosto}', 'r') as file:
+            data = load(file)
+        tiedosto_nimi = os.path.splitext(tiedosto)[0]
+        lahetettava_tiedosto = {'data': data, 'name': tiedosto_nimi}
+        api_key: str = 'pisteenlaskija2024versio3'
+        server_url: str = f'http://{asetus['palvelinOsoite']}/api/data'
+        lahetettava_tiedosto_json = dumps(lahetettava_tiedosto)
+        try:
+            response = requests.post(server_url, data=lahetettava_tiedosto_json, headers={
+                'Content-Type': 'application/json', 'X-API-KEY': api_key})
+            if response.status_code == 200:
+                os.remove(tiedosto_nimi)
+            return str(response.status_code)
+        except Exception as e:
+            print(e)
+            return str(e)
 
     @staticmethod
     def create_gameid() -> str:
@@ -1068,6 +1126,8 @@ class PisteenlaskijaUI(tk.Frame):
         self.rootCanvas.itemconfig(self.virhe_teksti, font=self.virheFontti)
         self.rootCanvas.coords(self.versioTeksti, versio_teksti_x_scaled, versio_teksti_y_scaled)
         self.rootCanvas.itemconfig(self.versioTeksti, font=self.verFontti, fill=asetus['fonttiVari'])
+        self.rootCanvas.coords(self.pisteiden_lahetys_teksti, virheen_sijainti_x_scaled, versio_teksti_y_scaled)
+        self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti, font=fontti_koko_ver_scaled)
         self.rootCanvas.configure(height=ikkuna_korkeus_scaled, width=ikkuna_leveys_scaled)
         self.taustakuva_resized = self.taustakuva_original.resize((ikkuna_leveys_scaled, ikkuna_korkeus_scaled),
                                                                   Image.Resampling.LANCZOS)
@@ -1080,6 +1140,7 @@ root = tk.Tk()
 tallennus_nimet()
 root.title("Sanghai Pisteenlaskija")
 root.geometry("1280x720")
+pisteiden_lahetys_teksti_nakyvissa = False
 
 asetus: dict = lue_asetukset()
 pelaaja = [{
