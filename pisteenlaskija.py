@@ -878,7 +878,7 @@ class PisteenlaskijaUI(tk.Frame):
 
             print('olet lähettämässä pisteitä palvelimelle')
 
-            if api_key == "pisteenlaskija2024versio3":
+            if api_key == "pisteenlaskija2024versio3" or "" or None:
 
                 server_url: str = f'http://{asetus['palvelinOsoite']}/api/api'
                 print("Api kysely")
@@ -896,7 +896,6 @@ class PisteenlaskijaUI(tk.Frame):
                         dump(api_temp, f)
                 except Exception as e:
                     print(e)
-
 
             if api_key != "pisteenlaskija2024versio3" or "" or None:
                 game_id = self.create_gameid()
@@ -917,49 +916,46 @@ class PisteenlaskijaUI(tk.Frame):
                     tiedosto_nimi = f'statistic/{game_id}.json'
                     with open(tiedosto_nimi, 'w') as file:
                         dump(tallennettava_tiedosto, file)
-                    file.close()
 
-                lahetettava_tiedosto = {
-                    'data': tallennettava_tiedosto,
-                    'name': game_id
-                }
-                api_key: str = 'pisteenlaskija2024versio3'
-                server_url: str = f'http://{asetus['palvelinOsoite']}/api/data'
-                lahetettava_tiedosto_json = dumps(lahetettava_tiedosto)
-            except Exception as e:
-                mb.showinfo(title='Jotain meni vikaan', message=f'tiedoston muodostuksessa ilmeni virhe {e}')
-                return
-            try:
-                response = requests.post(server_url, data=lahetettava_tiedosto_json, headers={
-                    'Content-Type': 'application/json', 'X-API-KEY': api_key})
-                if response.status_code == 200:
-                    os.remove(tiedosto_nimi)
-                    print("pisteet lähetetty")
-                    self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti, text='')
-                else:
-                    print(response.status_code)
-                    self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti,
-                                               text=f'palvelin yhteydessä virhe {response.status_code}')
+                    lahetettava_tiedosto = {
+                        'data': tallennettava_tiedosto,
+                        'name': game_id
+                        }
+                    server_url: str = f'http://{asetus['palvelinOsoite']}/api/data'
+                    lahetettava_tiedosto_json = dumps(lahetettava_tiedosto)
+                except Exception as e:
+                    mb.showinfo(title='Jotain meni vikaan', message=f'tiedoston muodostuksessa ilmeni virhe {e}')
+                    return
+                try:
+                    response = requests.post(server_url, data=lahetettava_tiedosto_json, headers={
+                        'Content-Type': 'application/json', 'X-API-KEY': api_key})
+                    if response.status_code == 200:
+                        os.remove(tiedosto_nimi)
+                        print("pisteet lähetetty")
+                        self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti, text='')
+                    else:
+                        print(response.status_code)
+                        self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti,
+                                                   text=f'palvelin yhteydessä virhe {response.status_code}')
 
-                self.scale_objects()
-            except Exception as e:
-                print(e)
-                mb.showinfo('Virhe palvelinyhteydessä', f'Palvelin yhteydessä ilmaantui virhe {e}')
-            for file in os.listdir('statistic'):
-                print(file)
-                lahetys = self.laheta_odottavat_pisteet(file)
-                if lahetys != '200':
-                    print(lahetys)
+                    self.scale_objects()
+                except Exception as e:
+                    print(e)
+                    mb.showinfo('Virhe palvelinyhteydessä', f'Palvelin yhteydessä ilmaantui virhe {e}')
+                for file in os.listdir('statistic'):
+                    print(file)
+                    lahetys = self.laheta_odottavat_pisteet(file)
+                    if lahetys != '200':
+                        print(lahetys)
         pisteiden_lahetys_teksti_nakyvissa = False
 
     @staticmethod
     def laheta_odottavat_pisteet(tiedosto) -> str:
-
+        global api_key
         with open(f'statistic/{tiedosto}', 'r') as file:
             data = load(file)
         tiedosto_nimi = os.path.splitext(tiedosto)[0]
         lahetettava_tiedosto = {'data': data, 'name': tiedosto_nimi}
-        api_key: str = 'pisteenlaskija2024versio3'
         server_url: str = f'http://{asetus['palvelinOsoite']}/api/data'
         lahetettava_tiedosto_json = dumps(lahetettava_tiedosto)
         try:
