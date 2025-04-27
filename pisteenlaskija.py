@@ -7,13 +7,25 @@ from PIL import ImageTk, Image
 import globals as gl
 import requests
 from tkinter import messagebox as mb
+from tkinter import font as tkFont
 from json import load, dump, dumps
 # from os import path as os.path
 import os.path
 # import pyglet
-from tkextrafont import Font
+# from tkextrafont import Font
 from typing import Optional
 import threading
+
+tkextrafont_available = False
+
+try:
+    import tkextrafont as Font
+    tkextrafont_available = True
+except ImportError:
+    tkextrafont_available = False
+except Exception as e:
+    print("Tuntematon virhe fontin lataamista varten" + e)
+    print("Fonttia ei pysty lataamaan kirjastovirheen vuoksi")
 
 '''
 TODO List:
@@ -385,13 +397,16 @@ class PisteenlaskijaUI(tk.Frame):
         self.lataa_tallenna = None
         self.game_id: str = self.create_gameid()
         # print(fonttikansio)
-        self.perusFontti: Font = Font(file='media/SpecialElite-Regular.ttf', family=gl.fontti,
-                                      size=int(gl.fonttiKoko * (asetus['fonttiKoko'] / 100)))
-        self.isoFontti: Font = Font(family=gl.fontti, size=int(gl.fonttiKokoIso * (asetus['fonttiKoko'] / 100)))
-        self.pieniFontti: Font = Font(family=gl.fontti, size=int(gl.fonttiKokoPieni * (asetus['fonttiKoko'] / 100)))
-        self.verFontti: Font = Font(family=gl.fontti, size=int(gl.fonttiKokoVer * (asetus['fonttiKoko'] / 100)))
-        self.J_Fontti: Font = Font(family=gl.fontti, size=int(gl.fonttiKokoJ * (asetus['fonttiKoko'] / 100)))
-        self.virheFontti: Font = Font(family=gl.fontti, size=int(gl.fonttiKokoVirhe * (asetus['fonttiKoko'] / 100)))
+        # try:
+            # from tkinter import Font
+        self.perusFontti: Font = self.load_font(int(gl.fonttiKoko))
+        self.isoFontti: Font = self.load_font(int(gl.fonttiKokoIso * (asetus['fonttiKoko'] / 100)))
+        self.pieniFontti: Font = self.load_font(int(gl.fonttiKokoPieni * (asetus['fonttiKoko'] / 100)))
+        self.verFontti: Font = self.load_font(int(gl.fonttiKokoVer * (asetus['fonttiKoko'] / 100)))
+        self.J_Fontti: Font = self.load_font(int(gl.fonttiKokoJ * (asetus['fonttiKoko'] / 100)))
+        self.virheFontti: Font = self.load_font(int(gl.fonttiKokoVirhe * (asetus['fonttiKoko'] / 100)))
+
+
         self.kierrosLyhenneText: list[int] = []  # Tämä on kierros teksti-objektien säilömiseen tarkoitettu array
         self.pelaajaText: list[int] = []  # Tämä on kokonaispisteissä näkyvien nimien teksti objetien säilömiseen
         self.pelaajaNimi: list[int] = []  # Tämä on ylhäällä nimirivillä olevia teksti-objekteja varten
@@ -461,6 +476,20 @@ class PisteenlaskijaUI(tk.Frame):
         self.pack()
         # Jos ikkunan koko muuttuu, niin skaalataan objektit muuttuneen ikkunan mukaiseksi
         master.bind("<Configure>", self.scale_objects)
+
+    @staticmethod
+    def load_font(font_size: int):
+        load_font_size= int(font_size * (asetus['fonttiKoko'] / 100))
+        #print(load_font_size)
+        try:
+            return tkFont.Font(family=gl.fontti, size=load_font_size)
+        except Exception as e:
+            print("järjestelmäfontin tuonti epäonnistui", e)
+
+        if tkextrafont_available:
+            return Font(file="media/SpecialElite-Regular.ttf", family=gl.fontti, size=load_font_size)
+        else:
+            return tkFont.Font(family="Arial", size=load_font_size)
 
     def lopeta_peli(self) -> None:
         self.master.destroy()
@@ -1082,12 +1111,12 @@ class PisteenlaskijaUI(tk.Frame):
         rivivali_scaled = ikkuna_korkeus_scaled * (gl.rivivali / gl.ikkunaYScale)
 
         # Update font -objects to correct size:
-        self.perusFontti = Font(family=gl.fontti, size=int(fontti_koko_scaled * (asetus['fonttiKoko'] / 100)))
-        self.isoFontti = Font(family=gl.fontti, size=int(fontti_koko_iso_scaled * (asetus['fonttiKoko'] / 100)))
-        self.pieniFontti = Font(family=gl.fontti, size=int(fontti_koko_pieni_scaled * (asetus['fonttiKoko'] / 100)))
-        self.verFontti = Font(family=gl.fontti, size=int(fontti_koko_ver_scaled * (asetus['fonttiKoko'] / 100)))
-        self.J_Fontti = Font(family=gl.fontti, size=int(fontti_koko_j_scaled * (asetus['fonttiKoko'] / 100)))
-        self.virheFontti = Font(family=gl.fontti, size=int(fontti_koko_virhe_scaled * (asetus['fonttiKoko'] / 100)))
+        self.perusFontti = self.load_font(fontti_koko_scaled)
+        self.isoFontti = self.load_font(fontti_koko_iso_scaled)
+        self.pieniFontti = self.load_font(fontti_koko_pieni_scaled)
+        self.verFontti = self.load_font(fontti_koko_ver_scaled)
+        self.J_Fontti = self.load_font(fontti_koko_j_scaled)
+        self.virheFontti = self.load_font(fontti_koko_virhe_scaled)
 
         # update texts based of the updated variables above
         y_temp = eka_kierros_y_location_scaled
@@ -1151,7 +1180,7 @@ class PisteenlaskijaUI(tk.Frame):
         self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti, font=fontti_koko_ver_scaled)
         self.rootCanvas.configure(height=ikkuna_korkeus_scaled, width=ikkuna_leveys_scaled)
         self.taustakuva_resized = self.taustakuva_original.resize((ikkuna_leveys_scaled, ikkuna_korkeus_scaled),
-                                                                  Image.Resampling.LANCZOS)
+                                                                  Image.Resampling.NEAREST)
         self.uusi_tausta = ImageTk.PhotoImage(self.taustakuva_resized)
         self.rootCanvas.itemconfig(self.muokattu_tausta, image=self.uusi_tausta)
 
