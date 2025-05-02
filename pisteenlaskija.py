@@ -916,7 +916,8 @@ class PisteenlaskijaUI(tk.Frame):
                 try:
                     response = requests.post(server_url, headers={'versio': versioNumero, 'X-API-KEY': api_key},
                                              timeout=10)
-                    api_key = response.text
+                    if response.status_code == 200:
+                        api_key = response.text
                     print(f'Uusi Api avain: {api_key}')
                     with open('media/settings.json', 'r') as f:
                         api_temp = load(f)
