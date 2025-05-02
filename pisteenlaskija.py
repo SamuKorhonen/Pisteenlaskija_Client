@@ -909,7 +909,7 @@ class PisteenlaskijaUI(tk.Frame):
 
             if api_key == "pisteenlaskija2024versio3" or "" or None:
 
-                server_url: str = f'http://{asetus['palvelinOsoite']}/api/api'
+                server_url: str = f'http://{asetus['palvelinOsoite']}/api/data'
                 print("Api kysely")
                 print(f'Vanha Api avain: {api_key}')
 
@@ -972,7 +972,7 @@ class PisteenlaskijaUI(tk.Frame):
                     print(e)
                     mb.showinfo('Virhe palvelinyhteydessä', f'Palvelin yhteydessä ilmaantui virhe {e}')
                 for file in os.listdir('statistic'):
-                    print(file)
+                    # print(file)
                     lahetys = self.laheta_odottavat_pisteet(file)
                     if lahetys != '200':
                         print(lahetys)
@@ -991,7 +991,7 @@ class PisteenlaskijaUI(tk.Frame):
             response = requests.post(server_url, data=lahetettava_tiedosto_json, headers={
                 'Content-Type': 'application/json', 'X-API-KEY': api_key})
             if response.status_code == 200:
-                os.remove(tiedosto_nimi)
+                os.remove(f'statistic/{tiedosto_nimi}.json')
             return str(response.status_code)
         except Exception as e:
             print(e)
