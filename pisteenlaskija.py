@@ -181,7 +181,7 @@ class OhjeIkkuna(tk.Toplevel):
             'Jakajan tunnistaa ympyröidystä J-kirjaimesta',
             ' ',
             'Saat pelin säännöt näkyviin painamalla "F11" (in progress)',
-            'Saat ohjelman asetukset näkyviin painamalla "F9"'
+            'Saat ohjelman asetukset näkyviin painamalla "F9"',
             'Laita pelatun kierroksen pisteet ja siirry',
             'seuraavalle kierrokselle painamalla "Enter"',
             ' ',
