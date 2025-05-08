@@ -35,7 +35,6 @@ TODO List:
 
 # pelaajaMaara = 6
 versioNumero = 'Versio 3.0'
-api_key = 'pisteenlaskija2024versio3'
 
 # tkextrafont.TkExtraFont.chdir = resource_path()
 
@@ -905,15 +904,19 @@ class PisteenlaskijaUI(tk.Frame):
         if asetus['datanLahetys']:
             global api_key
 <<<<<<< HEAD
+<<<<<<< HEAD
 
             print('olet lähettämässä pisteitä palvelimelle')
 
             if api_key == "pisteenlaskija2024versio3" or "" or None:
 
 =======
+=======
+
+>>>>>>> 553bd65 (API AVAIN TOIMII!! WOHOOO)
             print('olet lähettämässä pisteitä palvelimelle')
 
-            if api_key == "pisteenlaskija2024versio3" or not api_key:
+            if api_key == "pisteenlaskija2024versio3":
 
                 server_url: str = f'http://{asetus['palvelinOsoite']}/api/api'
                 print("Api kysely")
@@ -924,6 +927,11 @@ class PisteenlaskijaUI(tk.Frame):
                                              timeout=10)
                     api_key = response.text
                     print(f'Uusi Api avain: {api_key}')
+                    with open('media/settings.json', 'r') as f:
+                        api_temp = load(f)
+                    api_temp['api'] = api_key
+                    with open('media/settings.json', 'w') as f:
+                        dump(api_temp, f)
                 except Exception as e:
                     print(e)
 
@@ -1054,7 +1062,7 @@ class PisteenlaskijaUI(tk.Frame):
                     mb.showinfo(title='Jotain meni vikaan', message=f'tiedoston muodostuksessa ilmeni virhe {e}')
                 try:
                     response = requests.post(server_url, data=lahetettava_tiedosto_json, headers={
-                        'Content-Type': 'application/json', 'X-API-KEY': api_key})
+                        'Content-Type': 'application/json', 'X-API-KEY': api_key,'Pelityyppi': 'Normaali'})
                     os.remove(tiedosto_nimi) if response.status_code == 200 else None
                     print("pisteet lähetetty")
                 except Exception as e:
