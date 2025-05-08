@@ -13,6 +13,7 @@ from json import load, dump, dumps
 import os.path
 # import pyglet
 # from tkextrafont import Font
+from time import time
 from typing import Optional
 import threading
 
@@ -412,9 +413,14 @@ class PisteenlaskijaUI(tk.Frame):
         self.pelaajaNimi: list[int] = []  # Tämä on ylhäällä nimirivillä olevia teksti-objekteja varten
         self.kierrosPisteet: list[list[int]] = []
         self.kokoPisteTeksti: list[int] = []
+        self.skaalausAika = [0, 0]
         for i_temp in range(9):
             self.kierrosPisteet.append([])
         # print(self.kierrosPisteet)
+
+        # taustan koko muistiin
+        self.screen_height = self.master.winfo_height()
+        self.screen_width = self.master.winfo_width()
 
         # ladataan ja muokataan taustakuva ikkunaan
         self.taustakuva_original: Image = Image.open("media/tausta.bmp")
@@ -476,6 +482,8 @@ class PisteenlaskijaUI(tk.Frame):
         self.pack()
         # Jos ikkunan koko muuttuu, niin skaalataan objektit muuttuneen ikkunan mukaiseksi
         master.bind("<Configure>", self.scale_objects)
+        self.last_scale_time = time()
+        self.waiting_to_scale = False
 
     @staticmethod
     def load_font(font_size: int):
@@ -794,6 +802,12 @@ class PisteenlaskijaUI(tk.Frame):
             item['kokonaisPisteet'] = str(koko_piste)
         self.jarjesta_pelaajat()
 
+    @staticmethod
+    def laske_skaalaus_aika(skaalaus_aika, uusi_aika):
+        print(skaalaus_aika, uusi_aika)
+        paivitetty_aika = (skaalaus_aika[0] * skaalaus_aika[1] + uusi_aika) / (skaalaus_aika[1] + 1)
+        return paivitetty_aika
+
     def uusi_peli(self) -> None:
         # global pelaajaMaara, pelaaja, kierrosNumero, valittuKierros, valintaSijaintiY, valintaSijaintiX
         # global jakaja, sarakkeenLeveys, valittu
@@ -1094,7 +1108,22 @@ class PisteenlaskijaUI(tk.Frame):
                 jakaja_func = item['jakaja']
         return jakaja_func
 
-    def scale_objects(self, *_: tk.Event) -> None:
+    def scale_objects(self, event=None) -> None:
+        now_time = time()
+        if now_time - self.last_scale_time > 0.02:
+            self._scale_objects()
+            self.last_scale_time = time()
+            # self.waiting_to_scale = False
+        elif self.waiting_to_scale is False:
+            # self.waiting_to_scale = True
+            self.master.after(5, self.scale_objects)
+        else:
+            # self.waiting_to_scale = False
+            return
+
+
+    def _scale_objects(self, event=None) -> None:
+        start_time = time()
         # For scaling update the screen_width and screen_height variables
         ikkuna_leveys_scaled = self.master.winfo_width()
         ikkuna_korkeus_scaled = self.master.winfo_height()
@@ -1138,30 +1167,30 @@ class PisteenlaskijaUI(tk.Frame):
 
         # update texts based of the updated variables above
         y_temp = eka_kierros_y_location_scaled
-        for item in range(len(self.kierrosLyhenneText)):
-            self.rootCanvas.coords(self.kierrosLyhenneText[item], vasen_marginaali_scaled, y_temp)
-            self.rootCanvas.itemconfig(self.kierrosLyhenneText[item], font=self.pieniFontti, fill=asetus['fonttiVari'])
+        for item in self.kierrosLyhenneText:
+            self.rootCanvas.coords(item, vasen_marginaali_scaled, y_temp)
+            self.rootCanvas.itemconfig(item, font=self.pieniFontti, fill=asetus['fonttiVari'])
             y_temp += rivivali_scaled
 
         y_temp = koko_piste_marginaali_scaled + rivivali_scaled
-        for item in range(len(self.pelaajaText)):
-            self.rootCanvas.coords(self.pelaajaText[item], vasen_kokopiste_nimi_marginaali_scaled, y_temp)
-            self.rootCanvas.itemconfig(self.pelaajaText[item], font=self.perusFontti, fill=asetus['fonttiVari'])
+        for index, item in enumerate(self.pelaajaText):
+            self.rootCanvas.coords(item, vasen_kokopiste_nimi_marginaali_scaled, y_temp)
+            self.rootCanvas.itemconfig(item, font=self.perusFontti, fill=asetus['fonttiVari'])
             if gl.kierrosNumero == 0:
-                if gl.jakaja == item:
+                if gl.jakaja == index:
                     self.rootCanvas.coords(self.jakajanMerkki, jakajan_merkki_x_scaled, y_temp)
                     self.rootCanvas.itemconfig(self.jakajanMerkki, font=self.J_Fontti, fill=asetus['fonttiVari'])
             else:
-                if self.on_jakaja(self.rootCanvas.itemcget(self.pelaajaText[item], 'text')):
+                if self.on_jakaja(self.rootCanvas.itemcget(item, 'text')):
                     self.rootCanvas.coords(self.jakajanMerkki, jakajan_merkki_x_scaled, y_temp)
                     self.rootCanvas.itemconfig(self.jakajanMerkki, font=self.J_Fontti, fill=asetus['fonttiVari'])
             y_temp += rivivali_scaled
 
         x_temp = sijainti_x_oletus_scaled + (sarakkeen_leveys_scaled / 2)
-        for item in range(len(self.pelaajaNimi)):
-            self.rootCanvas.coords(self.pelaajaNimi[item], x_temp,
+        for item in self.pelaajaNimi:
+            self.rootCanvas.coords(item, x_temp,
                                    nimi_sijainti_y_scaled - (fontti_koko_scaled / 2))
-            self.rootCanvas.itemconfig(self.pelaajaNimi[item], font=self.perusFontti, fill=asetus['fonttiVari'])
+            self.rootCanvas.itemconfig(item, font=self.perusFontti, fill=asetus['fonttiVari'])
             x_temp += sarakkeen_leveys_scaled
 
         x_temp = sijainti_x_oletus_scaled + (sarakkeen_leveys_scaled / 2)
@@ -1197,10 +1226,25 @@ class PisteenlaskijaUI(tk.Frame):
         self.rootCanvas.coords(self.pisteiden_lahetys_teksti, virheen_sijainti_x_scaled, versio_teksti_y_scaled)
         self.rootCanvas.itemconfig(self.pisteiden_lahetys_teksti, font=fontti_koko_ver_scaled)
         self.rootCanvas.configure(height=ikkuna_korkeus_scaled, width=ikkuna_leveys_scaled)
-        self.taustakuva_resized = self.taustakuva_original.resize((ikkuna_leveys_scaled, ikkuna_korkeus_scaled),
+
+        # calculation_time = time()
+        # print("muut paitsi kuva käsitelty", (calculation_time - start_time))
+
+        if ikkuna_korkeus_scaled != self.screen_height and ikkuna_leveys_scaled != self.screen_width:
+            self.taustakuva_resized = self.taustakuva_original.resize((ikkuna_leveys_scaled, ikkuna_korkeus_scaled),
                                                                   Image.Resampling.NEAREST)
-        self.uusi_tausta = ImageTk.PhotoImage(self.taustakuva_resized)
-        self.rootCanvas.itemconfig(self.muokattu_tausta, image=self.uusi_tausta)
+            self.uusi_tausta = ImageTk.PhotoImage(self.taustakuva_resized)
+            self.rootCanvas.itemconfig(self.muokattu_tausta, image=self.uusi_tausta)
+            self.screen_height = ikkuna_korkeus_scaled
+            self.screen_width = ikkuna_leveys_scaled
+        # self.rootCanvas.update_idletasks()
+
+        calculation_time = time() - start_time
+        self.skaalausAika[0] = self.laske_skaalaus_aika(self.skaalausAika, calculation_time)
+        self.skaalausAika[1] += 1
+        print(self.skaalausAika[0])
+
+        # print("taustakuva käsitelty ja skaalattu", (calculation_time - start_time))
 
 
 # super simple window creation, which get all objects from Pisteenlaskija -class
