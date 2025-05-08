@@ -413,7 +413,7 @@ class PisteenlaskijaUI(tk.Frame):
         self.pelaajaNimi: list[int] = []  # Tämä on ylhäällä nimirivillä olevia teksti-objekteja varten
         self.kierrosPisteet: list[list[int]] = []
         self.kokoPisteTeksti: list[int] = []
-        self.skaalausAika = [0, 0]
+        # self.skaalausAika = [0, 0]
         for i_temp in range(9):
             self.kierrosPisteet.append([])
         # print(self.kierrosPisteet)
@@ -804,7 +804,6 @@ class PisteenlaskijaUI(tk.Frame):
 
     @staticmethod
     def laske_skaalaus_aika(skaalaus_aika, uusi_aika):
-        print(skaalaus_aika, uusi_aika)
         paivitetty_aika = (skaalaus_aika[0] * skaalaus_aika[1] + uusi_aika) / (skaalaus_aika[1] + 1)
         return paivitetty_aika
 
@@ -920,43 +919,6 @@ class PisteenlaskijaUI(tk.Frame):
             global api_key
 
             print('olet lähettämässä pisteitä palvelimelle')
-
-            if api_key == "pisteenlaskija2024versio3" or not api_key:
-
-                server_url: str = f'http://{asetus['palvelinOsoite']}/api/api'
-                print("Api kysely")
-                print(f'Vanha Api avain: {api_key}')
-
-                try:
-                    response = requests.post(server_url, headers={'versio': versioNumero, 'X-API-KEY': api_key},
-                                             timeout=10)
-                    api_key = response.text
-                    print(f'Uusi Api avain: {api_key}')
-                except Exception as e:
-                    print(e)
-
-                lahetettava_tiedosto = {
-                    'data': tallennettava_tiedosto,
-                    'name': game_id
-                }
-                api_key: str = 'pisteenlaskija2024versio3'
-                server_url: str = f'http://{asetus['palvelinOsoite']}/api/data'
-                print("Api kysely")
-                print(f'Vanha Api avain: {api_key}')
-
-                try:
-                    response = requests.post(server_url, headers={'versio': versioNumero, 'X-API-KEY': api_key},
-                                             timeout=10)
-                    if response.status_code == 200:
-                        api_key = response.text
-                    print(f'Uusi Api avain: {api_key}')
-                    with open('media/settings.json', 'r') as f:
-                        api_temp = load(f)
-                    api_temp['api'] = api_key
-                    with open('media/settings.json', 'w') as f:
-                        dump(api_temp, f)
-                except Exception as e:
-                    print(e)
 
             if api_key != "pisteenlaskija2024versio3" or "" or None:
                 game_id = self.create_gameid()
@@ -1110,13 +1072,14 @@ class PisteenlaskijaUI(tk.Frame):
 
     def scale_objects(self, event=None) -> None:
         now_time = time()
-        if now_time - self.last_scale_time > 0.02:
+        print(self.waiting_to_scale)
+        if now_time - self.last_scale_time > 0.01:
             self._scale_objects()
             self.last_scale_time = time()
-            # self.waiting_to_scale = False
+            self.waiting_to_scale = False
         elif self.waiting_to_scale is False:
-            # self.waiting_to_scale = True
-            self.master.after(5, self.scale_objects)
+            self.waiting_to_scale = True
+            self.master.after(10, self.scale_objects)
         else:
             # self.waiting_to_scale = False
             return
@@ -1239,12 +1202,12 @@ class PisteenlaskijaUI(tk.Frame):
             self.screen_width = ikkuna_leveys_scaled
         # self.rootCanvas.update_idletasks()
 
-        calculation_time = time() - start_time
-        self.skaalausAika[0] = self.laske_skaalaus_aika(self.skaalausAika, calculation_time)
-        self.skaalausAika[1] += 1
-        print(self.skaalausAika[0])
+        # calculation_time = time() - start_time
+        #self.skaalausAika[0] = self.laske_skaalaus_aika(self.skaalausAika, calculation_time)
+        #self.skaalausAika[1] += 1
+        # print(self.skaalausAika[0])
 
-        # print("taustakuva käsitelty ja skaalattu", (calculation_time - start_time))
+        print("taustakuva käsitelty ja skaalattu", (time() - start_time))
 
 
 # super simple window creation, which get all objects from Pisteenlaskija -class
